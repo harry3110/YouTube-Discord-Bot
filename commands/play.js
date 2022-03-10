@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton, MessageSelectMenu  } = require('discord.js');
+const downloader = require("../downloaders/youtube");
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -13,7 +14,7 @@ module.exports = {
 	async execute(interaction) {
         // await interaction.reply("Playing song");
 
-        let button_row = new MessageActionRow();
+        /* let button_row = new MessageActionRow();
 
         // Button row
         for (let i = 1; i <= 5; i++) {
@@ -23,29 +24,33 @@ module.exports = {
                     .setLabel(i.toString())
                     .setStyle("PRIMARY")
             )
+        } */
+
+        // Get songs
+        let songs = await downloader.searchSongs(interaction.options.getString("song_name"));
+        
+        let select_options = [];
+
+        for (let song_id in songs) {
+            let song = songs[song_id];
+
+            select_options.push({
+                label: song.title,
+                value: song_id,
+                description: song.artist
+            })
         }
 
-        // Select row
+
         let select_row = new MessageActionRow();
 
         select_row.addComponents(
             new MessageSelectMenu()
                 .setCustomId('select')
                 .setPlaceholder('Nothing selected')
-                .addOptions([
-                    {
-                        label: 'She Makes Me Wanna',
-                        description: 'JLS',
-                        value: 'video_id_here',
-                    },
-                    {
-                        label: 'Another song',
-                        description: 'Another artist',
-                        value: 'the_other_video_id',
-                    },
-                ])
+                .addOptions(select_options)
         );
 
-		await interaction.reply({ content: 'Pong!', components: [button_row, select_row] });
+		await interaction.reply({ content: 'Pong!', components: [select_row] });
 	},
 };

@@ -8,20 +8,7 @@ const fs = require('node:fs');
 
 // Discord JS
 const discord = require('discord.js');
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-
-// Youtube DL
-const ytdl = require('youtube-dl-exec');
-
-// YouTube API
-const {google} = require('googleapis');
-
-const youtube = google.youtube({
-    version: 'v3',
-    auth: process.env.YOUTUBE_API_KEY
-});
 
 // Associative array of all songs in queue. Key is the guild ID, value is an array of songs.
 let queue = {};
@@ -32,67 +19,6 @@ const client = new discord.Client({
         discord.Intents.FLAGS.GUILDS
     ]
 });
-
-/**
- * Searcj for a song through youtube
- * 
- * @param {*} query 
- */
-async function searchSongs(query) {
-    let response = await youtube.search.list({
-        part: 'snippet',
-        type: 'video',
-        q: query,
-        maxResults: 10,
-        safeSearch: 'moderate',
-        videoEmbeddable: true
-    }).then(res => {
-        return res.data;
-        console.log(res.data);
-    }).catch(error => {
-        console.error(error);
-        return false;
-    });
-
-    if (response === false) {
-        console.log("Error searching for songs");
-        return [];
-    }
-
-    let results = response.items;
-
-    let songs = {};
-
-    results.forEach(result => {
-        let snippet = result.snippet;
-        let thumbnails = snippet.thumbnails; // Object of small/medium/high thumbnails
-
-        songs[result.id.videoId] = {
-            title: snippet.title,
-            artist: snippet.channelTitle,
-            publishDate: snippet.publishedAt,
-            thumbnail: thumbnails.high.url,
-        }
-    });
-
-    return songs;
-}
-
-/**
- * Add a song to the queue by a video ID.
- * 
- * @param {*} video_id 
- */
-function addSongToQueue(video_id) {
-    
-}
-
-/**
- * Returns an associative array of songs in the queue, where the key is the key is the video ID.
- */
-function getQueue(guild_id) {
-
-}
 
 // Register slash commands
 client.commands = new discord.Collection();

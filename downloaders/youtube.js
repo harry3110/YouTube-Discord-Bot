@@ -20,9 +20,10 @@ module.exports = {
             part: 'snippet',
             type: 'video',
             q: query,
-            maxResults: 10,
+            maxResults: 9,
             safeSearch: 'moderate',
-            videoEmbeddable: true
+            videoEmbeddable: true,
+            videoCategoryId: 10     // Music
         }).then(res => {
             return res.data;
             console.log(res.data);
@@ -69,5 +70,35 @@ module.exports = {
      */
     getQueue(guild_id) {
 
+    },
+
+    async getSongData(video_id) {
+        let data = await ytdl(`https://www.youtube.com/watch?v=${video_id}`, {
+            dumpSingleJson: true,
+        }).then(info => info);
+
+        console.log(data);
+
+        let artist = data.creator ?? data.uploader_id;
+        let title = data.track ?? data.title;
+
+        return {
+            artist: artist,
+            title: title,
+        }
+    },
+
+    async downloadSong(video_id) {
+        console.log(`Downloading song: ${video_id}`);
+
+        return ytdl.exec(`https://www.youtube.com/watch?v=${video_id}`, {
+            extractAudio: true,
+            writeThumbnail: true,
+            // output: `./downloads/%(creator)s/%(track)s (%(id)s).%(ext)s`,
+            output: `./downloads/youtube/%(id)s.%(ext)s`,
+            format: 'bestaudio',
+        }).then(
+            output => console.log(output)
+        )
     }
 }

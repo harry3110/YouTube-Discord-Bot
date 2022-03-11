@@ -10,8 +10,18 @@ const fs = require('node:fs');
 const discord = require('discord.js');
 const { Routes } = require('discord-api-types/v9');
 
+// Downloader
+const downloader = require("./downloaders/youtube.js");
+
 // Associative array of all songs in queue. Key is the guild ID, value is an array of songs.
 let queue = {};
+
+colors = {
+    'aqua': 0x5abdd1,       // Search and queue
+    'red': 0xa11a1a,        // Eerrors
+    'orange': 0xdbbb1a,     // Currently playing
+    'green': 0x11ba49       // Bot ready message
+}
 
 // Create a client
 const client = new discord.Client({
@@ -35,42 +45,64 @@ for (const file of commandFiles) {
 // On client ready
 client.once('ready', () => {
 	console.log(`Logged in as ${client.user.username}`);
-    
-    // const guild_ids = client.guilds.cache.map(guild => guild.id);
-
-    // console.log("Registering guild slash commands");
-
-    // Register the slash commands
-    /* guild_ids.forEach(async guild_id => {
-        const rest = new REST({ version: '9' }).setToken(discord_token);
-
-        rest.put(Routes.applicationGuildCommands(process.env.APPLICATION_ID, guild_id), { body: commands })
-            .then(() => console.log(`- Registered for ${guild_id}.`))
-            .catch(console.error)
-        ;
-    }); */
-
-    /* let songs = searchSongs("She makes me wanna").then((x) => {
-        console.log(x);
-    }); */
 });
 
 // On interaction
 client.on("interactionCreate", async interaction => {
-    if (!interaction.isCommand()) return;
-
-    const command = client.commands.get(interaction.commandName);
-
-    if (!command) return;
-
     try {
-        await command.execute(interaction)
+        if (interaction.isCommand()) {
+            const command = client.commands.get(interaction.commandName);
+            
+            if (!command) return;
+            
+            await command.execute(interaction)
 
+            // If there is a response, set the queue to it
+            /* if (command_response) {
+                queue = command_response.queue;
+            } */
+        } else if (interaction.isSelectMenu()) {
+            // If select method exists
+            /* if (command.onSelect) {
+                await command.onSelect(interaction);
+            } */
 
-        // If there is a response, set the queue to it
-        /* if (command_response) {
-            queue = command_response.queue;
-        } */
+            // console.log(interaction);
+
+            let select_id = interaction.customId;
+            let values = interaction.values;
+
+            if (select_id === "song_choices") {
+                video_id = values[0];
+
+                // Get song information
+                let song_data = await downloader.getSongData(video_id)
+
+                let embed = new discord.MessageEmbed()
+                    .setTitle(`Downloading ${song_data.title} by ${song_data.artist}...`)
+                    .setColor(colors.orange)
+                ;
+
+                interaction.update({
+                    embeds: [embed],
+                    components: []
+                });
+                
+                // Download song
+                await downloader.downloadSong(video_id);
+
+                // Completed message
+                embed = new discord.MessageEmbed()
+                    .setTitle(`Downloaded  ${song_data.title} by ${song_data.artist}!`)
+                    .setColor(colors.green)
+                ;
+
+                interaction.editReply({
+                    embeds: [embed],
+                    components: []
+                });
+            }
+        }
         
     } catch (error) {
         console.log(error);
@@ -78,7 +110,7 @@ client.on("interactionCreate", async interaction => {
         await interaction.reply({
             content: "An error occurred while processing your request.",
             ephemeral: true
-        })
+        });
     }
 })
 

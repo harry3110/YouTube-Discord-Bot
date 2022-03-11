@@ -4,3 +4,7 @@ node_modules/
 config,json
 
 .env
+
+downloaders/ytdl-example.json
+
+downloads/

@@ -1,6 +1,26 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageActionRow, MessageButton, MessageSelectMenu  } = require('discord.js');
+const { MessageActionRow, MessageButton, MessageSelectMenu, MessageEmbed } = require('discord.js');
 const downloader = require("../downloaders/youtube");
+
+const emojis = {
+    0: "0️⃣",
+    1: "1️⃣",
+    2: "2️⃣",
+    3: "3️⃣",
+    4: "4️⃣",
+    5: "5️⃣",
+    6: "6️⃣",
+    7: "7️⃣",
+    8: "8️⃣",
+    9: "9️⃣",
+};
+
+colors = {
+    'aqua': 0x5abdd1,       // Search and queue
+    'red': 0xa11a1a,        // Eerrors
+    'orange': 0xdbbb1a,     // Currently playing
+    'green': 0x11ba49       // Bot ready message
+}
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -12,45 +32,54 @@ module.exports = {
                 .setRequired(true)),
         
 	async execute(interaction) {
-        // await interaction.reply("Playing song");
+        let songName = interaction.options.getString("song_name");
 
-        /* let button_row = new MessageActionRow();
+        let initialEmbed = new MessageEmbed()
+            .setTitle("Searching for songs...")
+            .setColor(colors.orange)
+            .setDescription("Query: " + songName)
+        ;
 
-        // Button row
-        for (let i = 1; i <= 5; i++) {
-            button_row.addComponents(
-                new MessageButton()
-                    .setCustomId("video_id_" + i)
-                    .setLabel(i.toString())
-                    .setStyle("PRIMARY")
-            )
-        } */
+        interaction.reply({
+            embeds: [initialEmbed]
+        });
 
         // Get songs
-        let songs = await downloader.searchSongs(interaction.options.getString("song_name"));
+        let songs = await downloader.searchSongs(songName);
         
         let select_options = [];
+        let emoji = 1;
 
         for (let song_id in songs) {
             let song = songs[song_id];
 
+            // Add song to select
             select_options.push({
                 label: song.title,
                 value: song_id,
-                description: song.artist
+                description: song.artist,
+                emoji: emojis[emoji++]
             })
         }
-
 
         let select_row = new MessageActionRow();
 
         select_row.addComponents(
             new MessageSelectMenu()
-                .setCustomId('select')
-                .setPlaceholder('Nothing selected')
+                .setCustomId('song_choices')
+                .setPlaceholder('Choose a song')
                 .addOptions(select_options)
         );
 
-		await interaction.reply({ content: 'Pong!', components: [select_row] });
-	},
+        let embed = new MessageEmbed()
+            .setTitle(`Search results for '${songName}'`)
+            .setDescription("Choose a song to play or add to queue")
+            .setColor(colors.aqua)
+        ;
+
+		await interaction.editReply({
+            embeds: [embed],
+            components: [select_row]
+        });
+	}
 };

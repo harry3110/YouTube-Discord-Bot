@@ -1,5 +1,7 @@
 // YouTube API
 const {google} = require('googleapis');
+const { from_string } = require('libsodium-wrappers');
+const fs = require('fs');
 
 const youtube = google.youtube({
     version: 'v3',
@@ -79,26 +81,45 @@ module.exports = {
 
         console.log(data);
 
-        let artist = data.creator ?? data.uploader_id;
+        let artist = data.creator ?? data.uploader;
         let title = data.track ?? data.title;
+        let album = data.album ?? data.playlist ?? "Unknown Album";
 
         return {
-            artist: artist,
+            id: video_id,
             title: title,
+            artist: artist,
+            album: album,
         }
     },
 
     async downloadSong(video_id) {
         console.log(`Downloading song: ${video_id}`);
 
-        return ytdl.exec(`https://www.youtube.com/watch?v=${video_id}`, {
+        let downloadLocation = `./downloads/youtube/${video_id}.%(ext)s`;
+        let songFile = downloadLocation.replace("%(ext)s", "opus");
+
+        if (fs.existsSync(songFile)) return songFile;
+
+        await ytdl.exec(`https://www.youtube.com/watch?v=${video_id}`, {
             extractAudio: true,
             writeThumbnail: true,
             // output: `./downloads/%(creator)s/%(track)s (%(id)s).%(ext)s`,
-            output: `./downloads/youtube/%(id)s.%(ext)s`,
+            output: downloadLocation,
             format: 'bestaudio',
-        }).then(
-            output => console.log(output)
-        )
+            audioFormat: "opus",        // Make YouTube DL only use opus
+        }).then(output => {
+            console.log({
+                "status": "success",
+                "output": output
+            });
+        }).catch(error => {
+            console.error({
+                "status": "error",
+                "error": error
+            })
+        });
+
+        return songFile;
     }
 }

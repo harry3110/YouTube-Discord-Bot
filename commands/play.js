@@ -17,7 +17,7 @@ const emojis = {
 
 colors = {
     'aqua': 0x5abdd1,       // Search and queue
-    'red': 0xa11a1a,        // Eerrors
+    'red': 0xa11a1a,        // Errors
     'orange': 0xdbbb1a,     // Currently playing
     'green': 0x11ba49       // Bot ready message
 }

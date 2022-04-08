@@ -14,11 +14,11 @@ const { Routes } = require('discord-api-types/v9');
 const downloader = require("./downloaders/youtube.js");
 
 // Associative array of all songs in queue. Key is the guild ID, value is an array of songs.
-let queue = {};
+const queue = require("./queue.js");
 
 colors = {
     'aqua': 0x5abdd1,       // Search and queue
-    'red': 0xa11a1a,        // Eerrors
+    'red': 0xa11a1a,        // Errors
     'orange': 0xdbbb1a,     // Currently playing
     'green': 0x11ba49       // Bot ready message
 }
@@ -26,7 +26,9 @@ colors = {
 // Create a client
 const client = new discord.Client({
     intents: [
-        discord.Intents.FLAGS.GUILDS
+        discord.Intents.FLAGS.GUILDS,
+        discord.Intents.FLAGS.GUILD_MESSAGES,
+        discord.Intents.FLAGS.GUILD_VOICE_STATES
     ]
 });
 
@@ -43,8 +45,12 @@ for (const file of commandFiles) {
 }
 
 // On client ready
-client.once('ready', () => {
+client.once('ready', async () => {
 	console.log(`Logged in as ${client.user.username}`);
+
+    client.user.setActivity("music", {
+        type: "LISTENING"
+    });
 });
 
 // On interaction
@@ -74,12 +80,9 @@ client.on("interactionCreate", async interaction => {
 
             if (select_id === "song_choices") {
                 video_id = values[0];
-
-                // Get song information
-                let song_data = await downloader.getSongData(video_id)
-
+                
                 let embed = new discord.MessageEmbed()
-                    .setTitle(`Downloading ${song_data.title} by ${song_data.artist}...`)
+                    .setTitle(`Adding song to queue...`)
                     .setColor(colors.orange)
                 ;
 
@@ -87,9 +90,22 @@ client.on("interactionCreate", async interaction => {
                     embeds: [embed],
                     components: []
                 });
+
+                // Get song information
+                let song_data = await downloader.getSongData(video_id)
+
+                embed = new discord.MessageEmbed()
+                    .setTitle(`Downloading ${song_data.title} by ${song_data.artist}...`)
+                    .setColor(colors.orange)
+                ;
+
+                await interaction.editReply({
+                    embeds: [embed],
+                    components: []
+                });
                 
                 // Download song
-                await downloader.downloadSong(video_id);
+                song_data.file = await downloader.downloadSong(video_id);
 
                 // Completed message
                 embed = new discord.MessageEmbed()
@@ -101,16 +117,35 @@ client.on("interactionCreate", async interaction => {
                     embeds: [embed],
                     components: []
                 });
+
+                // console.log(interaction.member.voice);
+                // console.log(interaction);
+
+                // Add voice and text channels
+                queue.setGuildVoiceChannel(interaction.guildId, interaction.member.voice);
+                queue.setGuildTextChannel(interaction.guildId, interaction.channelId);
+
+                // Add song to queue
+                queue.addOrPlay(interaction.guildId, song_data);
+            } else {
+                let embed = new discord.MessageEmbed()
+                    .setTitle(`There was an error with your selection.`)
+                    .setColor(colors.red)
+                ;
+
+                interaction.update({
+                    embeds: [embed],
+                })
             }
         }
         
     } catch (error) {
         console.log(error);
 
-        await interaction.reply({
+        /* await interaction.reply({
             content: "An error occurred while processing your request.",
             ephemeral: true
-        });
+        }); */
     }
 })
 

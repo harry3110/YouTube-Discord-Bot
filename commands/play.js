@@ -15,7 +15,7 @@ const emojis = {
     9: "9️⃣",
 };
 
-colors = {
+const colors = {
     'aqua': 0x5abdd1,       // Search and queue
     'red': 0xa11a1a,        // Errors
     'orange': 0xdbbb1a,     // Currently playing

@@ -4,7 +4,7 @@ const config = require('dotenv').config()
 const discord_token = process.env.DISCORD_TOKEN
 
 // Node
-const fs = require('node:fs');
+const fs = require('fs');
 
 // Discord JS
 const discord = require('discord.js');
@@ -14,7 +14,7 @@ const { Routes } = require('discord-api-types/v9');
 const downloader = require("./downloaders/youtube.js");
 
 // Associative array of all songs in queue. Key is the guild ID, value is an array of songs.
-const queue = require("./queue.js");
+const Queue = require("./queue.js");
 
 colors = {
     'aqua': 0x5abdd1,       // Search and queue
@@ -43,6 +43,11 @@ for (const file of commandFiles) {
 	client.commands.set(command.data.name, command);
     console.log(` - ${command.data.name} (./commands/${file})`);
 }
+
+/**
+ * @param {Queue} queue
+ */
+let queue = null;
 
 // On client ready
 client.once('ready', async () => {
@@ -105,7 +110,7 @@ client.on("interactionCreate", async interaction => {
                 });
                 
                 // Download song
-                song_data.file = await downloader.downloadSong(video_id);
+                // song_data.file = await downloader.downloadSong(video_id);
 
                 // Completed message
                 embed = new discord.MessageEmbed()
@@ -120,13 +125,12 @@ client.on("interactionCreate", async interaction => {
 
                 // console.log(interaction.member.voice);
                 // console.log(interaction);
-
-                // Add voice and text channels
-                queue.setGuildVoiceChannel(interaction.guildId, interaction.member.voice);
-                queue.setGuildTextChannel(interaction.guildId, interaction.channelId);
+                if (!queue) {
+                    queue = new Queue(interaction.guildId, interaction.member.voice.channel, interaction.channelId);
+                }
 
                 // Add song to queue
-                queue.addOrPlay(interaction.guildId, song_data);
+                queue.addOrPlay(song_data);
             } else {
                 let embed = new discord.MessageEmbed()
                     .setTitle(`There was an error with your selection.`)

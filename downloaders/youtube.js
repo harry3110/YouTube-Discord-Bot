@@ -2,6 +2,7 @@
 const {google} = require('googleapis');
 const { from_string } = require('libsodium-wrappers');
 const fs = require('fs');
+const { AudioResource, createAudioResource, demuxProbe } = require('@discordjs/voice');
 
 const youtube = google.youtube({
     version: 'v3',
@@ -75,7 +76,9 @@ module.exports = {
     },
 
     async getSongData(video_id) {
-        let data = await ytdl(`https://www.youtube.com/watch?v=${video_id}`, {
+        let video_url = `https://www.youtube.com/watch?v=${video_id}`;
+
+        let data = await ytdl(video_url, {
             dumpSingleJson: true,
         }).then(info => info);
 
@@ -90,6 +93,8 @@ module.exports = {
             title: title,
             artist: artist,
             album: album,
+            url: video_url,
+            createAudioResource: this.createAudioResource
         }
     },
 
@@ -107,7 +112,7 @@ module.exports = {
             // output: `./downloads/%(creator)s/%(track)s (%(id)s).%(ext)s`,
             output: downloadLocation,
             format: 'bestaudio',
-            audioFormat: "opus",        // Make YouTube DL only use opus
+            // audioFormat: "opus",        // Make YouTube DL only use opus
         }).then(output => {
             console.log({
                 "status": "success",
@@ -121,5 +126,54 @@ module.exports = {
         });
 
         return songFile;
-    }
+    },
+
+    /**
+     * 
+     * @returns {Promise<AudioResource<Track>>}
+     */
+    createAudioResource: function(video_url) {
+        console.log("Video URL: " . video_url)
+
+		return new Promise((resolve, reject) => {
+			const process = ytdl.exec(video_url, {
+                o: '-',
+                q: '',
+                f: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
+                r: '100K',
+            }, {
+                stdio: [
+                    'ignore',
+                    'pipe',
+                    'ignore'
+                ]
+            });
+
+            console.log({
+                "ytdl": process
+            });
+
+			if (!process.stdout) {
+				reject(new Error('No stdout'));
+				return;
+			}
+
+			const stream = process.stdout;
+
+			const onError = (error) => {
+				if (!process.killed) process.kill();
+				stream.resume();
+				reject(error);
+			};
+
+            process.once('spawn', () => {
+                demuxProbe(stream).then((probe) =>
+                    resolve(createAudioResource(probe.stream, {
+                        metadata: this,
+                        inputType: probe.type
+                    })),
+                ).catch(onError);
+            }).catch(onError);
+		});
+	}
 }

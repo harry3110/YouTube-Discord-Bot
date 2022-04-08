@@ -1,4 +1,5 @@
 const discordVoice = require('@discordjs/voice');
+const { channel } = require('diagnostics_channel');
 const fs = require('fs');
 
 colors = {
@@ -8,145 +9,87 @@ colors = {
     'green': 0x11ba49       // Bot ready message
 }
 
-const player = discordVoice.createAudioPlayer();
 
-module.exports = {
-    songQueue: {},
 
-    // guildId: null, or the index
-    songPlaying: {},
-
-    // Voice channels
-    voiceChannels: {},
-
-    // Text channels
-    textChannels: {},
-
-    setGuildVoiceChannel(guildId, voiceChannel) {
-        this.voiceChannels[guildId] = voiceChannel;
-    },
-
-    setGuildTextChannel(guildId, textChannel) {
-        this.textChannels[guildId] = textChannel;
-    },
+class Queue
+{
+    songQueue = [];
+    playingSong = false;
     
-    addSongToQueue: function(guildId, songData) {
-        if (!this.songQueue[guildId]) {
-            this.songQueue[guildId] = [];
-        }
-
-        this.songQueue[guildId].push(songData);
-    },
-
-    addOrPlay: function(guildId, songData) {
-        const connection = this.getConnection(guildId);
-        connection.subscribe(player);
-
-        if (this.songQueue[guildId]) {
-            this.addSongToQueue(guildId, songData);
-        } else {
-            this.addSongToQueue(guildId, songData);
-
-            this.getConnection(guildId);
-            this.playSong(guildId, 0);
-        }
-    },
-    
-    getSongQueue: function(guildId) {
-        return this.songQueue[guildId];
-    },
-
-    removeSongFromQueue: function(guildId, videoId) {
-        this.songQueue[guildId] = this.songQueue[guildId].filter(song => song.id !== videoId);
-    },
+    guildId = null;
+    voiceChannel = null;
+    textChannel = null;
 
     /**
-     * Join and get the channel
-     * 
-     * @param {*} guildId 
-     * @returns 
+     * @param {VoiceConnection} connection
      */
-    async getConnection(guildId) {
-        let connection = discordVoice.joinVoiceChannel({
-            guildId: guildId,
-            channelId: this.voiceChannels[guildId].channelId
+    connection = null;
+    subscription = null;
+    player = null;
+
+    constructor(guildId, voiceChannel, textChannel) {
+        this.guildId = guildId;
+        this.voiceChannel = voiceChannel;
+        this.textChannel = textChannel;
+    }
+
+    maybeJoinVoiceChannel() {
+        if (this.connection) return;
+
+        // Join the voice channel
+        this.connection = discordVoice.joinVoiceChannel({
+            channelId: this.voiceChannel.id,
+            guildId: this.guildId,
+            adapterCreator: this.voiceChannel.guild.voiceAdapterCreator
         });
-
-        try {
-		    await discordVoice.entersState(connection, discordVoice.VoiceConnectionStatus.Ready, 30e3);
-            return connection;
-        } catch (error) {
-            connection.destroy();
-            throw error;
-        }
-    },
-
-    playSong(guildId, index) {
-        let connection = this.getConnection(guildId);
-
-        if (!connection) {
-            console.log("No connection found, returning");
-            return;
-        }
-
-        let songToPlay = this.songQueue[guildId][index];
-        this.songPlaying[guildId] = index;
         
-        console.log(this.songQueue);
-        console.log(connection);
+        // Create audio player
+        this.player = discordVoice.createAudioPlayer();
+        this.subscription = discordVoice.getVoiceConnection(this.guildId).subscribe(this.player);
 
-        const song = discordVoice.createAudioResource(songToPlay.file, {
-            inputType: StreamType.Arbitrary
-        })
+        console.log(`Joined voice channel: ${this.voiceChannel.name}`);
+    }
 
-        player.play(song);
-
-        discordVoice.entersState(player, discordVoice.AudioPlayerStatus.Playing, 5e3);
-
-        /* dispatcher.on("start", () => {
-            let embed = new DiscordJS.MessageEmbed()
-                .setColor(colors["orange"])
-                .setTitle('Now playing!')
-                .addField(title, artist)
-
-                // .attachFiles(new DiscordJS.MessageAttachment('./images/temp.png'))
-                // .setThumbnail("attachment://temp.png")
-            ;
-
-            this.textChannels[guildId].send({
-                embeds: [embed]
-            });
-        })
-
-        dispatcher.on("finish", () => {
-            this.playNextOrLeave(guildId)
-        }); */
-    },
-
-    playNextOrLeave(guildId) {
-        let nextSong = this.songQueue.get(this.songPlaying[guildId]);
-
-        if (nextSong) {
-            this.playNextSong();
-        } else {
-            dispatcher.on("finish", () => {
-                voiceChannel.leave();
-                
-                this.songQueue[guildId] = [];
-                this.songPlaying[guildId] = null;
-                this.voiceChannels[guildId] = null;
-                this.textChannels[guildId] = null;
-            });
+    addSong(song) {
+        this.songQueue.push(song);
+    }
+    
+    addOrPlay(song) {
+        if (this.playingSong) {
+            this.addSong(song);
+            return
         }
-    },
 
-    playNextSong(guildId) {
-        let nextSong = this.songQueue[guildId][this.songPlaying[guildId] + 1];
+        this.playSong(song);
+    }
 
-        if (nextSong) {
-            this.playSong(guildId, this.songPlaying[guildId] + 1);
-        } else {
-            voiceChannel.leave();
-        }
+    getSongQueue() {
+        return this.songQueue;
+    }
+
+    removeSongFromQueue(song) {
+        this.songQueue.splice(this.songQueue.indexOf(song), 1);
+    }
+
+    async playSong(song) {
+        this.currentSong = song;
+        this.maybeJoinVoiceChannel();
+
+        console.log("About to play song...")
+        console.log(song);
+
+        // let audioResource = discordVoice.createAudioResource(song.file)
+        let audioResource = await song.createAudioResource(song.url);
+
+        this.player.play(audioResource);
+    }
+
+    leaveVoiceChannel() {
+        this.connection.destroy();
+        this.connection = null;
+        this.player = null;
+        this.songQueue = [];
     }
 }
+
+module.exports = Queue;

@@ -34,7 +34,17 @@ module.exports = {
 
         let recentSongs = queue.getPastSongs();
 
-        let page = interaction.options.getInteger("page") ?? 1;
+        if (recentSongs.length === 0) {
+            embed.setDescription("No songs have been played yet.");
+
+            await interaction.reply({
+                embeds: [embed]
+            });
+
+            return;
+        }
+
+        let page = (interaction.options.getInteger("page") ?? 1) - 1;
 
         if (recentSongs.length > pageSize) {
             embed.setDescription(`Showing the last ${pageSize} songs played. To view more use /recent <page>`);
@@ -47,10 +57,10 @@ module.exports = {
         let songs = recentSongs.slice(page * pageSize, pageSize);
 
         if (songs.length === 0) {
-            embed.setDescription("No songs have been played yet");
+            embed.setDescription(`There are no songs are on page ${page}.`);
         } else {
             songs.forEach((song, index) => {
-                embed.addField(`[${index + 1}] ${song.title}`, song.artist + (song.album ? " - " + song.album : ""), false);
+                embed.addField(`${song.title}`, song.artist + (song.album ? " - " + song.album : ""), false);
             });
         }
 

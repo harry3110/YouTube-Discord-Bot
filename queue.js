@@ -196,6 +196,15 @@ class Queue
             this.player.unpause();
             this.paused = false;
         }
+
+        let embed = new discord.MessageEmbed()
+            .setTitle(`${this.paused ? "Paused" : "Unpaused"} the song!`)
+            .setColor(colors.green)
+        ;
+
+        this.lastInteraction.editReply({
+            embeds: [embed]
+        });
     }
 
     leaveVoiceChannel() {

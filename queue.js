@@ -79,12 +79,15 @@ class Queue
 
             } else if (newState.status === discordVoice.AudioPlayerStatus.Playing) {
                 if (this.lastInteraction) {
+                    let song = this.getCurrentSong();
+
                     let embed = new discord.MessageEmbed()
-                        .setTitle(`Now playing  ${this.getCurrentSong().title} by ${this.getCurrentSong().artist}!`)
+                        .setTitle(`Now playing  ${song.title} by ${song.artist}!`)
                         .setColor(colors.green)
+                        .setThumbnail(song.cover)
                     ;
 
-                    this.lastInteraction.editReply({
+                    this.lastInteraction.followUp({
                         embeds: [embed],
                         components: []
                     });
@@ -97,6 +100,17 @@ class Queue
 
     addSong(song) {
         this.songQueue.push(song);
+
+        let embed = new discord.MessageEmbed()
+            .setTitle(`Added ${song.title} by ${song.artist} to queue!`)
+            .setColor(colors.aqua)
+            .setThumbnail(song.cover)
+        ;
+
+        this.lastInteraction.editReply({
+            embeds: [embed],
+            components: []
+        });
     }
     
     addOrPlay(song) {
@@ -124,8 +138,12 @@ class Queue
         return this.songQueue;
     }
 
-    removeSongFromQueue(song) {
-        this.songQueue.splice(this.songQueue.indexOf(song), 1);
+    getSong(index) {
+        return this.songQueue[index];
+    }
+
+    removeSong(index) {
+        this.songQueue.splice(index, 1);
     }
 
     async playSong(song) {

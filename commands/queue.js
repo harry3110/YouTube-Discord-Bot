@@ -28,6 +28,7 @@ module.exports = {
         if (queue.getCurrentSong()) {
             let song = queue.getCurrentSong();
             embed.addField("Currently playing", song.title + " - " + song.artist, false);
+            embed.setThumbnail(song.cover)
         }
 
         if (queue.getSongQueue().length === 0) {
@@ -35,7 +36,7 @@ module.exports = {
         } else {
             // Loop through each song in the queue
             queue.getSongQueue().forEach((song, index) => {
-                embed.addField(song.title, song.artist + (song.album ? " - " + song.album : ""), false);
+                embed.addField(`[${index + 1}] ${song.title}`, song.artist + (song.album ? " - " + song.album : ""), false);
             });
         }
 

@@ -78,6 +78,7 @@ module.exports = {
             artist: artist,
             album: album,
             url: video_url,
+            cover: data.thumbnail,
             createAudioResource: this.createAudioResource
         }
     },

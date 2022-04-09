@@ -31,7 +31,7 @@ module.exports = {
                 .setDescription('The name of the song to play or add to queue')
                 .setRequired(true)),
         
-	async execute(interaction) {
+	async execute(interaction, queue) {
         let songName = interaction.options.getString("song_name");
 
         let initialEmbed = new MessageEmbed()

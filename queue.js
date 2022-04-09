@@ -9,12 +9,10 @@ colors = {
     'green': 0x11ba49       // Bot ready message
 }
 
-
-
 class Queue
 {
     songQueue = [];
-    playingSong = false;
+    currentSong = null;
     
     guildId = null;
     voiceChannel = null;
@@ -33,8 +31,19 @@ class Queue
         this.textChannel = textChannel;
     }
 
+    setVoiceChannel(voiceChannel) {
+        this.voiceChannel = voiceChannel;
+    }
+
+    setTextChannel(textChannel) {
+        this.textChannel = textChannel;
+    }
+
     maybeJoinVoiceChannel() {
         if (this.connection) return;
+
+        // console.log(this.voiceChannel ?? "No voice channel");
+        // console.log(this.textChannel ?? "No text channel");
 
         // Join the voice channel
         this.connection = discordVoice.joinVoiceChannel({
@@ -47,6 +56,20 @@ class Queue
         this.player = discordVoice.createAudioPlayer();
         this.subscription = discordVoice.getVoiceConnection(this.guildId).subscribe(this.player);
 
+        
+		// Configure audio player
+		this.player.on('stateChange', (oldState, newState) => {
+            if (newState.status === discordVoice.AudioPlayerStatus.Idle && oldState.status !== discordVoice.AudioPlayerStatus.Idle) {
+                // Play next song, if the current song has finished playing
+                (oldState.resource).metadata.onFinish();
+                void this.playNextOrLeave();
+
+            } /* else if (newState.status === discordVoice.AudioPlayerStatus.Playing) {
+                // A new track has started playing
+                (newState.resource).metadata.onStart();
+            } */
+        });
+
         console.log(`Joined voice channel: ${this.voiceChannel.name}`);
     }
 
@@ -55,12 +78,20 @@ class Queue
     }
     
     addOrPlay(song) {
-        if (this.playingSong) {
+        if (this.currentSong !== null) {
             this.addSong(song);
             return
         }
 
         this.playSong(song);
+    }
+
+    playNextOrLeave() {
+        if (this.songQueue.length > 0) {
+            this.playSong(this.songQueue[0]);
+        } else {
+            this.leaveVoiceChannel();
+        }
     }
 
     getSongQueue() {
@@ -78,10 +109,17 @@ class Queue
         console.log("About to play song...")
         console.log(song);
 
-        // let audioResource = discordVoice.createAudioResource(song.file)
         let audioResource = await song.createAudioResource(song.url);
 
-        this.player.play(audioResource);
+        // Remove the song from the queue
+        this.songQueue.shift();
+
+        await this.player.play(audioResource)
+    }
+
+    skip() {
+        this.player.stop();
+        this.playNextOrLeave();
     }
 
     leaveVoiceChannel() {
@@ -89,6 +127,7 @@ class Queue
         this.connection = null;
         this.player = null;
         this.songQueue = [];
+        this.currentSong = null;
     }
 }
 

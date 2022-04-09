@@ -5,7 +5,7 @@ module.exports = {
 		.setName('whoami')
         .setDescription("Shows the current user's information"),
         
-	async execute(interaction) {
+	async execute(interaction, queue) {
         await interaction.reply(`Hello ${interaction.user.username} from ${interaction.guild.name}, use tag is '${interaction.user.tag}' and your ID is ${interaction.user.id}`);
 	},
 };

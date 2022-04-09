@@ -66,8 +66,6 @@ module.exports = {
             dumpSingleJson: true,
         }).then(info => info);
 
-        console.log(data);
-
         let artist = data.creator ?? data.uploader;
         let title = data.track ?? data.title;
         let album = data.album ?? data.playlist ?? "Unknown Album";

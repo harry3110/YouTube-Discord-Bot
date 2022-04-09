@@ -81,6 +81,7 @@ class Queue
                 if (this.lastInteraction) {
                     let song = this.getCurrentSong();
 
+                    // Send message when the song starts playing
                     let embed = new discord.MessageEmbed()
                         .setTitle(`Now playing  ${song.title} by ${song.artist}!`)
                         .setColor(colors.green)

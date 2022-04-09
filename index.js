@@ -113,30 +113,6 @@ client.on("interactionCreate", async interaction => {
                 // Get song information
                 let song_data = await downloader.getSongData(video_id);
 
-                embed = new discord.MessageEmbed()
-                    .setTitle(`Downloading ${song_data.title} by ${song_data.artist}...`)
-                    .setColor(colors.orange)
-                ;
-
-                await interaction.editReply({
-                    embeds: [embed],
-                    components: []
-                });
-
-                // Completed message
-                embed = new discord.MessageEmbed()
-                    .setTitle(`Downloaded  ${song_data.title} by ${song_data.artist}!`)
-                    .setColor(colors.green)
-                ;
-
-                interaction.editReply({
-                    embeds: [embed],
-                    components: []
-                });
-
-                // console.log(interaction.member.voice);
-                // console.log(interaction);
-
                 // Add song to queue
                 queue.addOrPlay(song_data);
             } else {

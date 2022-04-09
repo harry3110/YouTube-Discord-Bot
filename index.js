@@ -47,7 +47,7 @@ for (const file of commandFiles) {
 /**
  * @param {Queue} queue
  */
-let queue = new Queue(null, null, null);
+let queue = new Queue(client, null, null, null);
 
 // On client ready
 client.once('ready', async () => {
@@ -73,6 +73,21 @@ client.on("interactionCreate", async interaction => {
                 await interaction.reply({
                     embeds: [embed]
                 });
+
+                return;
+            }
+
+            if ("enabled" in command && !command.enabled) {
+                let embed = new discord.MessageEmbed();
+
+                embed.setTitle("This command is not enabled..");
+                embed.setColor(colors.red);
+
+                await interaction.reply({
+                    embeds: [embed]
+                });
+
+                return;
             }
 
             queue.setGuildId(interaction.guildId);
@@ -99,6 +114,20 @@ client.on("interactionCreate", async interaction => {
 
             if (select_id === "song_choices") {
                 video_id = values[0];
+
+                if (video_id === "cancel") {
+                    let embed = new discord.MessageEmbed();
+
+                    embed.setTitle("Search cancelled.");
+                    embed.setColor(colors.red);
+
+                    await interaction.update({
+                        embeds: [embed],
+                        components: []
+                    });
+
+                    return;
+                }
                 
                 let embed = new discord.MessageEmbed()
                     .setTitle(`Adding song to queue...`)
@@ -123,7 +152,7 @@ client.on("interactionCreate", async interaction => {
 
                 interaction.update({
                     embeds: [embed],
-                })
+                });
             }
         }
         
@@ -135,7 +164,7 @@ client.on("interactionCreate", async interaction => {
             ephemeral: true
         });
     }
-})
+});
 
 // Login to Discord with the token
 client.login(discord_token);

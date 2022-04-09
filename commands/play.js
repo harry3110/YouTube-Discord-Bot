@@ -56,11 +56,19 @@ module.exports = {
             // Add song to select
             select_options.push({
                 label: song.title.substring(0, 100),
-                value: song_id.substring(0, 100),
+                value: song_id,
                 description: song.artist.substring(0, 100),
                 emoji: emojis[emoji++]
             })
         }
+
+        // Cancel option
+        select_options.push({
+            label: "Cancel",
+            value: "cancel",
+            description: "Cancel the search",
+            emoji: "❌",
+        });
 
         let select_row = new MessageActionRow();
 

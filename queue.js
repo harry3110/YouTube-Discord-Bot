@@ -18,6 +18,7 @@ class Queue
     guildId = null;
     voiceChannel = null;    // The actual channel
     textChannel = null;     // channel ID
+    client = null;
 
     // The last interaction, the last message will be updated
     lastInteraction = null;
@@ -31,7 +32,8 @@ class Queue
     subscription = null;
     player = null;
 
-    constructor(guildId, voiceChannel, textChannel) {
+    constructor(client, guildId, voiceChannel, textChannel) {
+        this.client = client;
         this.guildId = guildId;
         this.voiceChannel = voiceChannel;
         this.textChannel = textChannel;
@@ -78,9 +80,14 @@ class Queue
                 void this.playNextOrLeave();
 
             } else if (newState.status === discordVoice.AudioPlayerStatus.Playing) {
-                if (this.lastInteraction) {
-                    let song = this.getCurrentSong();
+                let song = this.getCurrentSong();
 
+                // Set the 'listening to' message
+                this.client.user.setActivity(`${song.title} by ${song.artist}`, {
+                    type: "LISTENING"
+                });
+
+                if (this.lastInteraction) {
                     // Send message when the song starts playing
                     let embed = new discord.MessageEmbed()
                         .setTitle(`Now playing  ${song.title} by ${song.artist}!`)
@@ -182,6 +189,10 @@ class Queue
         this.player = null;
         this.songQueue = [];
         this.currentSong = null;
+        
+        this.client.user.setActivity("music", {
+            type: "LISTENING"
+        });
     }
 }
 

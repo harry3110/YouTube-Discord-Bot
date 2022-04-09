@@ -59,22 +59,6 @@ module.exports = {
         return songs;
     },
 
-    /**
-     * Add a song to the queue by a video ID.
-     * 
-     * @param {*} video_id 
-     */
-    addSongToQueue(video_id) {
-        
-    },
-
-    /**
-     * Returns an associative array of songs in the queue, where the key is the key is the video ID.
-     */
-    getQueue(guild_id) {
-
-    },
-
     async getSongData(video_id) {
         let video_url = `https://www.youtube.com/watch?v=${video_id}`;
 
@@ -158,14 +142,14 @@ module.exports = {
 				if (!process.killed) process.kill();
 				stream.resume();
 				reject(error);
-			};
+			}
 
             process.once('spawn', () => {
                 demuxProbe(stream).then((probe) =>
                     resolve(createAudioResource(probe.stream, {
                         metadata: this,
                         inputType: probe.type
-                    })),
+                    }))
                 ).catch(onError);
             }).catch(onError);
 		});

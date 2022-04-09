@@ -139,7 +139,7 @@ class Queue
         // Remove the song from the queue
         this.songQueue.shift();
 
-        await this.player.play(audioResource)
+        await this.player.play(audioResource);
     }
 
     skip() {

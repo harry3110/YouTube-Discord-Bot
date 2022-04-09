@@ -1,7 +1,7 @@
 // Config
-const config = require('dotenv').config()
+const config = require('dotenv').config();
 
-const discord_token = process.env.DISCORD_TOKEN
+const discord_token = process.env.DISCORD_TOKEN;
 
 // Node
 const fs = require('fs');
@@ -65,7 +65,7 @@ client.on("interactionCreate", async interaction => {
             const command = client.commands.get(interaction.commandName);
             
             if (!command) {
-                let embed = new discord.MessageEmbed()
+                let embed = new discord.MessageEmbed();
 
                 embed.setTitle("There is no command with that name..");
                 embed.setColor(colors.red);
@@ -80,7 +80,7 @@ client.on("interactionCreate", async interaction => {
             queue.setTextChannel(interaction.channelId);
             queue.setLastInteraction(interaction);
 
-            await command.execute(interaction, queue)
+            await command.execute(interaction, queue);
 
             // If there is a response, set the queue to it
             /* if (command_response) {
@@ -111,7 +111,7 @@ client.on("interactionCreate", async interaction => {
                 });
 
                 // Get song information
-                let song_data = await downloader.getSongData(video_id)
+                let song_data = await downloader.getSongData(video_id);
 
                 embed = new discord.MessageEmbed()
                     .setTitle(`Downloading ${song_data.title} by ${song_data.artist}...`)
@@ -154,10 +154,10 @@ client.on("interactionCreate", async interaction => {
     } catch (error) {
         console.log(error);
 
-        /* await interaction.reply({
+        await interaction.reply({
             content: "An error occurred while processing your request.",
             ephemeral: true
-        }); */
+        });
     }
 })
 

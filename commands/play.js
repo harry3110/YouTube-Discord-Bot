@@ -40,7 +40,7 @@ module.exports = {
             .setDescription("Query: " + songName)
         ;
 
-        interaction.reply({
+        await interaction.reply({
             embeds: [initialEmbed]
         });
 

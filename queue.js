@@ -13,6 +13,7 @@ colors = {
 class Queue
 {
     songQueue = [];
+    pastSongs = [];
     currentSong = null;
     
     guildId = null;
@@ -76,7 +77,7 @@ class Queue
 		// Configure audio player
 		this.player.on('stateChange', (oldState, newState) => {
             if (newState.status === discordVoice.AudioPlayerStatus.Idle && oldState.status !== discordVoice.AudioPlayerStatus.Idle) {
-                // Play next song, if the current song has finished playing
+                // Play next song, if the current song has finished playing or has been skipped
                 void this.playNextOrLeave();
 
             } else if (newState.status === discordVoice.AudioPlayerStatus.Playing) {
@@ -106,6 +107,12 @@ class Queue
         console.log(`Joined voice channel: ${this.voiceChannel.name}`);
     }
 
+    /**
+     * Add a song to the queue
+     * 
+     * @param {*} song      The song to add
+     * @param {*} silentAdd Whether to send a message to the channel
+     */
     addSong(song) {
         this.songQueue.push(song);
 
@@ -122,17 +129,16 @@ class Queue
     }
     
     addOrPlay(song) {
-        if (this.currentSong !== null) {
-            this.addSong(song);
-            return
-        }
+        this.addSong(song);
 
-        this.playSong(song);
+        if (this.currentSong === null) {
+            this.playSong();
+        }
     }
 
     playNextOrLeave() {
         if (this.songQueue.length > 0) {
-            this.playSong(this.songQueue[0]);
+            this.playSong();
         } else {
             this.leaveVoiceChannel();
         }
@@ -154,23 +160,32 @@ class Queue
         this.songQueue.splice(index, 1);
     }
 
-    async playSong(song) {
-        this.currentSong = song;
+    getPastSongs() {
+        return this.pastSongs;
+    }
+
+    addPastSong(song) {
+        this.pastSongs.push(song);
+    }
+
+    async playSong() {
+        // Get the song and remove it from the queue
+        let song = this.currentSong = this.songQueue.shift();
+
         this.maybeJoinVoiceChannel();
         
         console.log("Playing song: " + song.title + " by " + song.artist);
 
         let audioResource = await song.createAudioResource(song.url);
 
-        // Remove the song from the queue
-        this.songQueue.shift();
+        // Add the song to past songs list
+        this.addPastSong(song);
 
         await this.player.play(audioResource);
     }
 
     skip() {
         this.player.stop();
-        this.playNextOrLeave();
     }
 
     pause() {

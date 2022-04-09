@@ -47,7 +47,7 @@ for (const file of commandFiles) {
 /**
  * @param {Queue} queue
  */
-let queue = null;
+let queue = new Queue(null, null, null);
 
 // On client ready
 client.once('ready', async () => {
@@ -64,9 +64,23 @@ client.on("interactionCreate", async interaction => {
         if (interaction.isCommand()) {
             const command = client.commands.get(interaction.commandName);
             
-            if (!command) return;
-            
-            await command.execute(interaction)
+            if (!command) {
+                let embed = new discord.MessageEmbed()
+
+                embed.setTitle("There is no command with that name..");
+                embed.setColor(colors.red);
+
+                await interaction.reply({
+                    embeds: [embed]
+                });
+            }
+
+            queue.setGuildId(interaction.guildId);
+            queue.setVoiceChannel(interaction.member.voice.channel);
+            queue.setTextChannel(interaction.channelId);
+            queue.setLastInteraction(interaction);
+
+            await command.execute(interaction, queue)
 
             // If there is a response, set the queue to it
             /* if (command_response) {
@@ -108,9 +122,6 @@ client.on("interactionCreate", async interaction => {
                     embeds: [embed],
                     components: []
                 });
-                
-                // Download song
-                // song_data.file = await downloader.downloadSong(video_id);
 
                 // Completed message
                 embed = new discord.MessageEmbed()
@@ -125,9 +136,6 @@ client.on("interactionCreate", async interaction => {
 
                 // console.log(interaction.member.voice);
                 // console.log(interaction);
-                if (!queue) {
-                    queue = new Queue(interaction.guildId, interaction.member.voice.channel, interaction.channelId);
-                }
 
                 // Add song to queue
                 queue.addOrPlay(song_data);

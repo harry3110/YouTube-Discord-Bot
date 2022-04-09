@@ -1,5 +1,6 @@
 const discordVoice = require('@discordjs/voice');
 const { channel } = require('diagnostics_channel');
+const discord = require('discord.js');
 const fs = require('fs');
 
 colors = {
@@ -15,8 +16,13 @@ class Queue
     currentSong = null;
     
     guildId = null;
-    voiceChannel = null;
-    textChannel = null;
+    voiceChannel = null;    // The actual channel
+    textChannel = null;     // channel ID
+
+    // The last interaction, the last message will be updated
+    lastInteraction = null;
+
+    paused = false;
 
     /**
      * @param {VoiceConnection} connection
@@ -31,12 +37,20 @@ class Queue
         this.textChannel = textChannel;
     }
 
+    setGuildId(guildId) {
+        this.guildId = guildId;
+    }
+
     setVoiceChannel(voiceChannel) {
         this.voiceChannel = voiceChannel;
     }
 
     setTextChannel(textChannel) {
         this.textChannel = textChannel;
+    }
+    
+    setLastInteraction(interaction) {
+        this.lastInteraction = interaction;
     }
 
     maybeJoinVoiceChannel() {
@@ -61,13 +75,21 @@ class Queue
 		this.player.on('stateChange', (oldState, newState) => {
             if (newState.status === discordVoice.AudioPlayerStatus.Idle && oldState.status !== discordVoice.AudioPlayerStatus.Idle) {
                 // Play next song, if the current song has finished playing
-                (oldState.resource).metadata.onFinish();
                 void this.playNextOrLeave();
 
-            } /* else if (newState.status === discordVoice.AudioPlayerStatus.Playing) {
-                // A new track has started playing
-                (newState.resource).metadata.onStart();
-            } */
+            } else if (newState.status === discordVoice.AudioPlayerStatus.Playing) {
+                if (this.lastInteraction) {
+                    let embed = new discord.MessageEmbed()
+                        .setTitle(`Now playing  ${this.getCurrentSong().title} by ${this.getCurrentSong().artist}!`)
+                        .setColor(colors.green)
+                    ;
+
+                    this.lastInteraction.editReply({
+                        embeds: [embed],
+                        components: []
+                    });
+                }
+            }
         });
 
         console.log(`Joined voice channel: ${this.voiceChannel.name}`);
@@ -94,6 +116,10 @@ class Queue
         }
     }
 
+    getCurrentSong() {
+        return this.currentSong;
+    }
+
     getSongQueue() {
         return this.songQueue;
     }
@@ -105,9 +131,8 @@ class Queue
     async playSong(song) {
         this.currentSong = song;
         this.maybeJoinVoiceChannel();
-
-        console.log("About to play song...")
-        console.log(song);
+        
+        console.log("Playing song: " + song.title + " by " + song.artist);
 
         let audioResource = await song.createAudioResource(song.url);
 
@@ -120,6 +145,16 @@ class Queue
     skip() {
         this.player.stop();
         this.playNextOrLeave();
+    }
+
+    pause() {
+        if (this.paused) {
+            this.player.pause();
+            this.paused = true;
+        } else {
+            this.player.unpause();
+            this.paused = false;
+        }
     }
 
     leaveVoiceChannel() {

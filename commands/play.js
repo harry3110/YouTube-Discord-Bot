@@ -55,9 +55,9 @@ module.exports = {
 
             // Add song to select
             select_options.push({
-                label: song.title,
-                value: song_id,
-                description: song.artist,
+                label: song.title.substring(0, 100),
+                value: song_id.substring(0, 100),
+                description: song.artist.substring(0, 100),
                 emoji: emojis[emoji++]
             })
         }

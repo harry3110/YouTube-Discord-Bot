@@ -11,8 +11,8 @@ const colors = {
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('skip')
-        .setDescription("Skips the current song"),
+		.setName('leave')
+        .setDescription("Stop playing music and leave the voice channel"),
         
     /**
      * 
@@ -21,11 +21,11 @@ module.exports = {
      */
 	async execute(interaction, queue) {
         let embed = new MessageEmbed()
-            .setTitle("Skipping song")
+            .setTitle("Leaving voice channel... Goodbye :(")
             .setColor(colors.red)
         ;
 
-        queue.skip();
+        queue.leaveVoiceChannel();
 
         await interaction.reply({
             embeds: [embed]

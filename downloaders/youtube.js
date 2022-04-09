@@ -133,8 +133,6 @@ module.exports = {
      * @returns {Promise<AudioResource<Track>>}
      */
     createAudioResource: function(video_url) {
-        console.log("Video URL: " . video_url)
-
 		return new Promise((resolve, reject) => {
 			const process = ytdl.exec(video_url, {
                 o: '-',
@@ -147,10 +145,6 @@ module.exports = {
                     'pipe',
                     'ignore'
                 ]
-            });
-
-            console.log({
-                "ytdl": process
             });
 
 			if (!process.stdout) {

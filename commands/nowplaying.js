@@ -11,8 +11,8 @@ const colors = {
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('queue')
-        .setDescription("Shows the current queue"),
+		.setName('nowplaying')
+        .setDescription("Shows the current song"),
         
     /**
      * 
@@ -21,22 +21,15 @@ module.exports = {
      */
 	async execute(interaction, queue) {
         let embed = new MessageEmbed()
-            .setTitle("Current queue")
+            .setTitle("Currently Playing")
             .setColor(colors.aqua)
         ;
 
         if (queue.getCurrentSong()) {
             let song = queue.getCurrentSong();
-            embed.addField("Currently playing", song.title + " - " + song.artist, false);
-        }
-
-        if (queue.getSongQueue().length === 0) {
-            embed.setDescription("Queue is empty");
+            embed.addField(song.title,  + " - " + song.artist + (song.album ? " - " + song.album : ""), false);
         } else {
-            // Loop through each song in the queue
-            queue.getSongQueue().forEach((song, index) => {
-                embed.addField(song.title, song.artist + (song.album ? " - " + song.album : ""), false);
-            });
+            embed.setDescription("No song currently playing");
         }
 
         await interaction.reply({

@@ -150,7 +150,7 @@ client.on("interactionCreate", async interaction => {
                     .setColor(colors.red)
                 ;
 
-                interaction.update({
+                await interaction.update({
                     embeds: [embed],
                 });
             }
@@ -159,10 +159,10 @@ client.on("interactionCreate", async interaction => {
     } catch (error) {
         console.log(error);
 
-        await interaction.reply({
-            content: "An error occurred while processing your request.",
-            ephemeral: true
-        });
+        // await interaction.reply({
+        //     content: "An error occurred while processing your request.",
+        //     ephemeral: true
+        // });
     }
 });
 

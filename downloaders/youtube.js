@@ -59,6 +59,32 @@ module.exports = {
         return songs;
     },
 
+    getCover(title, artist, album) {
+        const lastfm = require("../lastfm");
+
+        title = String(title).toLowerCase();
+        
+        // Remove common YouTube music video/lyric words
+        title = title.replace("music video", "");
+        title = title.replace("official video", "");
+        title = title.replace("official music video", "");
+        title = title.replace("lyrics", "");
+        title = title.replace("lyric video", "");
+
+        // Trim '(' and ')' from the title
+        title.replace(/^(\(|\))+|(\(|\))+$/g, "");
+
+        artist = String(artist).toLowerCase();
+
+        // Remove common YouTube music words
+        artist = title.replace("vevo", "");
+        artist = title.replace("official", "");
+
+        console.log(`Searching for cover for ${title} by ${artist}`);
+
+        return lastfm.getCoverUrl(title, artist)
+    },
+
     async getSongData(video_id) {
         let video_url = `https://www.youtube.com/watch?v=${video_id}`;
 
@@ -76,7 +102,7 @@ module.exports = {
             artist: artist,
             album: album,
             url: video_url,
-            cover: data.thumbnail,
+            cover: this.getCover(title, artist) ?? data.thumbnail,
             createAudioResource: this.createAudioResource
         }
     },

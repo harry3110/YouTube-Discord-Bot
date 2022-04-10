@@ -194,7 +194,12 @@ class Queue
     }
 
     skip() {
-        this.player.stop();
+        if (this.player){
+            this.player.stop();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     async pause() {

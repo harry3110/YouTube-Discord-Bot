@@ -20,12 +20,21 @@ module.exports = {
      * @param {Queue} queue 
      */
 	async execute(interaction, queue) {
-        let embed = new MessageEmbed()
-            .setTitle("Skipping song")
-            .setColor(colors.red)
-        ;
+        let songToSkip = queue.getCurrentSong();
+        let success = queue.skip();
+        let embed;
 
-        queue.skip();
+        if (success) {
+            embed = new MessageEmbed()
+                .setTitle(`Skipped ${songToSkip.title} by ${songToSkip.artist}`)
+                .setColor(colors.green)
+            ;
+        } else {
+            embed = new MessageEmbed()
+                .setTitle("There is no song playing to skip.")
+                .setColor(colors.red)
+            ;
+        }
 
         await interaction.reply({
             embeds: [embed]

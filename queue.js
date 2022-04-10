@@ -127,6 +127,7 @@ class Queue
 
         let embed = new discord.MessageEmbed()
             .setTitle(`Added ${song.title} by ${song.artist} to queue!`)
+            .setDescription(`In position #${this.songQueue.length}`)
             .setColor(colors.aqua)
             .setThumbnail(song.cover)
         ;
@@ -223,7 +224,7 @@ class Queue
         return this.paused
     }
 
-    leaveVoiceChannel() {
+    async leaveVoiceChannel() {
         this.connection.destroy();
         this.connection = null;
         this.player = null;

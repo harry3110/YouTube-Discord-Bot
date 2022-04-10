@@ -1,88 +1,93 @@
 // Config
 const config = require('dotenv').config();
 
-const lastFM = require("last-fm");
-const lastfm = new lastFM(process.env.LF_API_KEY, {
-    userAgent: "BeeBop/1.0.0"
-})
+class lastFmAsync {
+    lfm = null;
 
-let fm = {
-    /**
-     * Get the cover art for a song
-     * 
-     * @param {*} title 
-     * @param {*} artist 
-     * @returns 
-     */
-    getCoverUrl: function(title, artist) {
-        let query = {
-            name: title,
-            artistName: artist,
-        }
+    constructor(options) {
+        const lastFM = require("lastfm").LastFmNode;
 
-        let coverUrl = null;
-        
-        lastfm.trackInfo(query, (error, data) => {
-            if (error) {
-                console.log("There was an error:");
-                console.log(error);
-                return;
-            }
-        
-            console.log(data);
+        this.lfm = new lastFM(options);
+    }
 
-            let images = data.images;
-        
-            // Get the last image in the array
-            coverUrl = images[images.length - 1];
-        })
+    async request(reqString, args) {
+        return new Promise((resolve, reject) => {
+            this.lfm.request(reqString, { ...args, handlers: {
+                success: resolve,
+                error: reject 
+            }});
+        });
+    }
 
-        return coverUrl;
-    },
-
-    getSimilarSongs(title, artist, limit = 10) {
-        let query = {
-            name: title,
-            artistName: artist,
-            limit: limit
-        }
-
-        let similarSongs = [];
-        
-        lastfm.trackSimilar(query, (error, data) => {
-            if (error) {
-                console.log("There was an error:");
-                console.log(error);
-                return;
-            }
-
-            let tracks = data.track;
-
-            tracks.forEach(track => {
-                // Get cover image
-                // Possible image sizes: small, medium, large, extralarge, mega
-                let image_url = track.image.find(image => image.size === 'large')['#text'];
-
-                similarSongs.push({
-                    title: track.name,
-                    artist: track.artist.name,
-                    // album: track.album.title,
-                    cover: image_url,
-                    match_chance: track.match,
-                });
-            })
+    async getTrackInfo(title, artist, autocorrect = true) {
+        let data = await this.request("track.getInfo", {
+            track: title,
+            artist: artist,
+            autocorrect: autocorrect
         });
 
-        // @TODO The songs aren't being returned because the callback isn't setup to return the songs (in the API)
+        if (data.error) {
+            return data.error;
+        } else {
+            return data;
+        }
+    }
 
-        return similarSongs;
+    async getCoverUrl(title, artist, size = "large") {
+        let data = await this.getTrackInfo(title, artist);
+
+        if (data.error) {
+            return data.error;
+        } else {
+            if (!data.track.album || !data.track.album.image) {
+                return null;
+            }
+
+            let images = data.track.album.image;
+
+            let image = images.find(image => image.size === size);
+
+            return image["#text"];
+        }
+    }
+
+    async getSimilarTracks(title, artist, autocorrect = true) {
+        let data = await this.request("track.getSimilar", {
+            track: title,
+            artist: artist,
+            autocorrect: autocorrect
+        });
+
+        if (data.error) {
+            return data.error;
+        } else {
+            return data.similartracks.track;
+        }
     }
 }
 
-// let songs = fm.getSimilarSongs("The Sign", "Ace of Base");
+let asyncLF = new lastFmAsync({
+    api_key: process.env.LF_API_KEY,
+    // secret: process.env.LF_API_SECRET,
+    useragent: "BeeBop/1.0.0"
+});
 
-// console.log(songs);
+// asyncLF.getSimilarTracks("The Sign", "Ace of Base").then(data => {
+//     console.log(data);
+// });
 
-// console.log("Finished");
+// asyncLF.getCoverUrl("The Sign", "Ace of Base").then(data => {
+//     console.log(data);
+// });
 
-module.exports = fm;
+/**
+similarSongs.push({
+    title: track.name,
+    artist: track.artist.name,
+    // album: track.album.title,
+    cover: image_url,
+    match_chance: track.match,
+});
+ */
+
+module.exports = asyncLF;

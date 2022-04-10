@@ -59,7 +59,7 @@ module.exports = {
         return songs;
     },
 
-    getCover(title, artist, album) {
+    async getCover(title, artist, album) {
         const lastfm = require("../lastfm");
 
         title = String(title).toLowerCase();
@@ -77,12 +77,10 @@ module.exports = {
         artist = String(artist).toLowerCase();
 
         // Remove common YouTube music words
-        artist = title.replace("vevo", "");
-        artist = title.replace("official", "");
+        artist = artist.replace("vevo", "");
+        artist = artist.replace("official", "");
 
-        console.log(`Searching for cover for ${title} by ${artist}`);
-
-        return lastfm.getCoverUrl(title, artist)
+        return await lastfm.getCoverUrl(title, artist);
     },
 
     async getSongData(video_id) {
@@ -102,7 +100,7 @@ module.exports = {
             artist: artist,
             album: album,
             url: video_url,
-            cover: /* this.getCover(title, artist) ?? */ data.thumbnail,
+            cover: await this.getCover(title, artist) ?? data.thumbnail,
             createAudioResource: this.createAudioResource
         }
     },

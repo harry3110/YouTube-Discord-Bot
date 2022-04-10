@@ -76,10 +76,10 @@ class Queue
         
 		// Configure audio player
 		this.player.on('stateChange', (oldState, newState) => {
-            console.log({
-                "oldState": oldState,
-                "newState": newState
-            })
+            // console.log({
+            //     "oldState": oldState,
+            //     "newState": newState
+            // })
 
             // States: 'bufferering', 'idle', 'playing', 'paused'
 

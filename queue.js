@@ -87,7 +87,7 @@ class Queue
                 // Play next song, if the current song has finished playing or has been skipped
                 void this.playNextOrLeave();
 
-            } else if (oldState.status === discordVoice.AudioPlayerStatus.Idle && newState.status === discordVoice.AudioPlayerStatus.Playing) {
+            } else if (newState.status === discordVoice.AudioPlayerStatus.Playing) {
                 // Playing new song
 
                 let song = this.getCurrentSong();
@@ -97,7 +97,7 @@ class Queue
                     type: "LISTENING"
                 });
 
-                if (this.lastInteraction) {
+                if (this.textChannel) {
                     // Send message when the song starts playing
                     let embed = new discord.MessageEmbed()
                         .setTitle(`Now playing  ${song.title} by ${song.artist}!`)
@@ -105,7 +105,7 @@ class Queue
                         .setThumbnail(song.cover)
                     ;
 
-                    this.lastInteraction.followUp({
+                    this.textChannel.send({
                         embeds: [embed],
                         components: []
                     });

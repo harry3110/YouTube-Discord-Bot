@@ -92,7 +92,7 @@ client.on("interactionCreate", async interaction => {
 
             queue.setGuildId(interaction.guildId);
             queue.setVoiceChannel(interaction.member.voice.channel);
-            queue.setTextChannel(interaction.channelId);
+            queue.setTextChannel(interaction.channel);
             queue.setLastInteraction(interaction);
 
             await command.execute(interaction, queue);
@@ -159,10 +159,17 @@ client.on("interactionCreate", async interaction => {
     } catch (error) {
         console.log(error);
 
-        // await interaction.reply({
-        //     content: "An error occurred while processing your request.",
-        //     ephemeral: true
-        // });
+        // try {
+        //     await interaction.reply({
+        //         content: "An error occurred while processing your request.",
+        //         ephemeral: true
+        //     });
+        // } catch (error) {
+        //     await interaction.editReply({
+        //         content: "An error occurred while processing your request.",
+        //         ephemeral: true
+        //     });
+        // }
     }
 });
 

@@ -47,7 +47,7 @@ let fm = {
             limit: limit
         }
 
-        var similarSongs = [];
+        let similarSongs = [];
         
         lastfm.trackSimilar(query, (error, data) => {
             if (error) {
@@ -79,10 +79,10 @@ let fm = {
     }
 }
 
-let songs = fm.getSimilarSongs("The Sign", "Ace of Base");
+// let songs = fm.getSimilarSongs("The Sign", "Ace of Base");
 
-console.log(songs);
+// console.log(songs);
 
-console.log("Finished");
+// console.log("Finished");
 
-// module.exports = fm;
+module.exports = fm;

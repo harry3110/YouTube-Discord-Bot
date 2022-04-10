@@ -102,7 +102,7 @@ module.exports = {
             artist: artist,
             album: album,
             url: video_url,
-            cover: this.getCover(title, artist) ?? data.thumbnail,
+            cover: /* this.getCover(title, artist) ?? */ data.thumbnail,
             createAudioResource: this.createAudioResource
         }
     },

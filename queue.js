@@ -56,7 +56,7 @@ class Queue
         this.lastInteraction = interaction;
     }
 
-    maybeJoinVoiceChannel() {
+    async maybeJoinVoiceChannel() {
         if (this.connection) return;
 
         // console.log(this.voiceChannel ?? "No voice channel");
@@ -76,11 +76,20 @@ class Queue
         
 		// Configure audio player
 		this.player.on('stateChange', (oldState, newState) => {
+            console.log({
+                "oldState": oldState,
+                "newState": newState
+            })
+
+            // States: 'bufferering', 'idle', 'playing', 'paused'
+
             if (newState.status === discordVoice.AudioPlayerStatus.Idle && oldState.status !== discordVoice.AudioPlayerStatus.Idle) {
                 // Play next song, if the current song has finished playing or has been skipped
                 void this.playNextOrLeave();
 
-            } else if (newState.status === discordVoice.AudioPlayerStatus.Playing) {
+            } else if (oldState.status === discordVoice.AudioPlayerStatus.Idle && newState.status === discordVoice.AudioPlayerStatus.Playing) {
+                // Playing new song
+
                 let song = this.getCurrentSong();
 
                 // Set the 'listening to' message
@@ -113,7 +122,7 @@ class Queue
      * @param {*} song      The song to add
      * @param {*} silentAdd Whether to send a message to the channel
      */
-    addSong(song) {
+    async addSong(song) {
         this.songQueue.push(song);
 
         let embed = new discord.MessageEmbed()
@@ -122,14 +131,14 @@ class Queue
             .setThumbnail(song.cover)
         ;
 
-        this.lastInteraction.editReply({
+        await this.lastInteraction.editReply({
             embeds: [embed],
             components: []
         });
     }
     
-    addOrPlay(song) {
-        this.addSong(song);
+    async addOrPlay(song) {
+        await this.addSong(song);
 
         if (this.currentSong === null) {
             this.playSong();
@@ -172,7 +181,7 @@ class Queue
         // Get the song and remove it from the queue
         let song = this.currentSong = this.songQueue.shift();
 
-        this.maybeJoinVoiceChannel();
+        await this.maybeJoinVoiceChannel();
         
         console.log("Playing song: " + song.title + " by " + song.artist);
 
@@ -188,23 +197,25 @@ class Queue
         this.player.stop();
     }
 
-    pause() {
-        if (this.paused) {
-            this.player.pause();
+    async pause() {
+        if (!this.paused) {
+            await this.player.pause();
             this.paused = true;
         } else {
-            this.player.unpause();
+            await this.player.unpause();
             this.paused = false;
         }
 
         let embed = new discord.MessageEmbed()
-            .setTitle(`${this.paused ? "Paused" : "Unpaused"} the song!`)
+            .setTitle(`${this.paused ? "Paused" : "Resumed"} the song!`)
             .setColor(colors.green)
         ;
 
-        this.lastInteraction.editReply({
+        await this.lastInteraction.reply({
             embeds: [embed]
         });
+
+        return this.paused
     }
 
     leaveVoiceChannel() {

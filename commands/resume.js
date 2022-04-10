@@ -22,22 +22,20 @@ module.exports = {
 	async execute(interaction, queue) {
         let embed;
 
+        // If the queue is not paused, tell the user
         if (!queue.paused) {
             embed = new MessageEmbed()
                 .setTitle("Already playing!")
                 .setColor(colors.orange)
             ;
-        } else {
-            embed = new MessageEmbed()
-                .setTitle("Resuming song...")
-                .setColor(colors.orange)
-            ;
+
+            await interaction.reply({
+                embeds: [embed]
+            });
+
+            return;
         }
 
         queue.pause();
-
-        await interaction.reply({
-            embeds: [embed]
-        });
 	},
 };

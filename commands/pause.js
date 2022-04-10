@@ -20,15 +20,6 @@ module.exports = {
      * @param {Queue} queue 
      */
 	async execute(interaction, queue) {
-        let embed = new MessageEmbed()
-            .setTitle(queue.paused ? "Resuming song" : "Pausing song...")
-            .setColor(colors.orange)
-        ;
-
-        queue.pause();
-
-        await interaction.reply({
-            embeds: [embed]
-        });
+        await queue.pause();
 	},
 };

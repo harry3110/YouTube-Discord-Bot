@@ -1,5 +1,18 @@
 # YouTube Discord Bot
 
+A simple discord bot that uses slash commands and dropdown selects to play music from YouTube. There is also a basic last.fm integration, currently getting the album cover art.
+
+Commands Available:
+- /play: Add or queue a song
+- /skip: Skip the current song
+- /leave: Stop the music
+- /queue: View the current queue and the current song
+- /nowplaying: View the current song
+- /recent: Songs that have been played recently
+- /remove: Remove a song from the queue
+- /pause: Pauses/resumes the current song
+- /resume: Resume the current song
+
 To do:
 
 - [x] Get search to work through Youtube DL

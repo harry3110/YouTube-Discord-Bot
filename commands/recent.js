@@ -44,7 +44,8 @@ module.exports = {
             return;
         }
 
-        let page = (interaction.options.getInteger("page") ?? 1) - 1;
+        let page = (interaction.options.getInteger("page") ?? 1);
+        let index = page--;
 
         if (recentSongs.length > pageSize) {
             embed.setDescription(`Showing the last ${pageSize} songs played. To view more use /recent <page>`);
@@ -54,7 +55,7 @@ module.exports = {
         }
 
         // Get the songs to display
-        let songs = recentSongs.slice(page * pageSize, pageSize);
+        let songs = recentSongs.slice(index * pageSize, pageSize);
 
         if (songs.length === 0) {
             embed.setDescription(`There are no songs are on page ${page}.`);

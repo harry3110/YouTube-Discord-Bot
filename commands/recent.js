@@ -61,7 +61,7 @@ module.exports = {
             embed.setDescription(`There are no songs are on page ${page}.`);
         } else {
             songs.forEach((song, index) => {
-                embed.addField(`${song.title}`, song.artist + (song.album ? " - " + song.album : ""), false);
+                embed.addField(`${song.title}`, song.artist + (song.album ? " - " + song.album : "") + (song.skipped ? " (skipped)" : ""), false);
             });
         }
 

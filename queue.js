@@ -196,6 +196,9 @@ class Queue
 
     skip() {
         if (this.player){
+            // Set the last past song to skipped = true
+            this.getPastSongs()[this.getPastSongs().length - 1].skipped = true;
+
             this.player.stop();
             return true;
         } else {

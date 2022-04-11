@@ -100,6 +100,7 @@ module.exports = {
             artist: artist,
             album: album,
             url: video_url,
+            skipped: false,
             cover: await this.getCover(title, artist) ?? data.thumbnail,
             createAudioResource: this.createAudioResource
         }

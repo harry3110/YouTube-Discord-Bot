@@ -12,9 +12,10 @@ const youtube = google.youtube({
 // Youtube DL
 const ytdl = require('youtube-dl-exec');
 
-module.exports = {
+class YouTubeDownloader
+{
     /**
-     * Searcj for a song through youtube
+     * Search for a song through youtube
      * 
      * @param {*} query 
      */
@@ -57,7 +58,7 @@ module.exports = {
         });
 
         return songs;
-    },
+    }
 
     async getCover(title, artist, album) {
         const lastfm = require("../lastfm");
@@ -81,7 +82,7 @@ module.exports = {
         artist = artist.replace("official", "");
 
         return await lastfm.getCoverUrl(title, artist);
-    },
+    }
 
     async getSongData(video_id) {
         let video_url = `https://www.youtube.com/watch?v=${video_id}`;
@@ -104,7 +105,7 @@ module.exports = {
             cover: await this.getCover(title, artist) ?? data.thumbnail,
             createAudioResource: this.createAudioResource
         }
-    },
+    }
 
     async downloadSong(video_id) {
         console.log(`Downloading song: ${video_id}`);
@@ -134,13 +135,13 @@ module.exports = {
         });
 
         return songFile;
-    },
+    }
 
     /**
      * 
      * @returns {Promise<AudioResource<Track>>}
      */
-    createAudioResource: function(video_url) {
+    createAudioResource(video_url) {
 		return new Promise((resolve, reject) => {
 			const process = ytdl.exec(video_url, {
                 o: '-',
@@ -179,3 +180,5 @@ module.exports = {
 		});
 	}
 }
+
+module.exports = new YouTubeDownloader();

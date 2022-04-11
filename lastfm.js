@@ -33,8 +33,13 @@ class lastFmAsync {
         }
     }
 
-    async getCoverUrl(title, artist, size = "large") {
+    async getCoverUrl(title, artist) {
         let data = await this.getTrackInfo(title, artist);
+
+        let sizes = ["extralarge", "large", "medium", "small"];
+
+        // Get sizes from the 'size' variable and smaller
+        sizes = sizes.slice(sizes.indexOf(size));
 
         if (data.error) {
             return data.error;
@@ -45,9 +50,7 @@ class lastFmAsync {
 
             let images = data.track.album.image;
 
-            let image = images.find(image => image.size === size);
-
-            return image["#text"];
+            return images[images.length - 1]["#text"];
         }
     }
 
@@ -76,7 +79,7 @@ let asyncLF = new lastFmAsync({
 //     console.log(data);
 // });
 
-// asyncLF.getCoverUrl("The Sign", "Ace of Base").then(data => {
+// asyncLF.getCoverUrl("Pretty girl", "Maggie lindemann").then(data => {
 //     console.log(data);
 // });
 

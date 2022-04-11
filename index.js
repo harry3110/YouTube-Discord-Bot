@@ -11,7 +11,7 @@ const discord = require('discord.js');
 const { Routes } = require('discord-api-types/v9');
 
 // Downloader
-const downloader = require("./downloaders/youtube.js");
+const downloader = require("./downloaders/plex.js");
 
 // Associative array of all songs in queue. Key is the guild ID, value is an array of songs.
 const Queue = require("./queue.js");
@@ -113,9 +113,9 @@ client.on("interactionCreate", async interaction => {
             let values = interaction.values;
 
             if (select_id === "song_choices") {
-                video_id = values[0];
+                song_id = values[0];
 
-                if (video_id === "cancel") {
+                if (song_id === "cancel") {
                     let embed = new discord.MessageEmbed();
 
                     embed.setTitle("Search cancelled.");
@@ -140,7 +140,9 @@ client.on("interactionCreate", async interaction => {
                 });
 
                 // Get song information
-                let song_data = await downloader.getSongData(video_id);
+                let song_data = await downloader.getSongData(song_id);
+
+                console.log(song_data);
 
                 // Add song to queue
                 queue.addOrPlay(song_data);

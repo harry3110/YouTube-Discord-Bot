@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton, MessageSelectMenu, MessageEmbed } = require('discord.js');
-const downloader = require("../downloaders/youtube");
+const downloader = require("../downloaders/plex");
 
 const emojis = {
     0: "0️⃣",

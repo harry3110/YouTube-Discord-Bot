@@ -1,5 +1,7 @@
 // YouTube API
 const fs = require('fs');
+const fetch = require('node-fetch');
+const { resolve } = require("path");
 const { AudioResource, createAudioResource, demuxProbe } = require('@discordjs/voice');
 const PlexAPI = require('plex-api')
 
@@ -43,9 +45,6 @@ class PlexDownloader
 
     async getTrack(trackId) {
         let data = await this.query(`/library/metadata/${trackId}`);
-
-        console.log("Getting track")
-        console.log(data);
 
         return data.MediaContainer.Metadata[0];
     }
@@ -96,8 +95,6 @@ class PlexDownloader
             };
         });
 
-        console.log(tracks);
-
         return tracks;
     }
 
@@ -105,6 +102,26 @@ class PlexDownloader
         const lastfm = require("../lastfm");
 
         return await lastfm.getCoverUrl(title, artist);
+    }
+
+    async downloadFile(url, downloadPath) {
+        const res = await fetch(url);
+        const fileStream = fs.createWriteStream(downloadPath);
+
+        await new Promise((resolve, reject) => {
+            res.body.pipe(fileStream);
+            res.body.on("error", reject);
+            fileStream.on("finish", resolve);
+        });
+    }
+
+    async downloadCover(localAbsoluteUrl, trackId) {
+        const url = this.getPlexUrl(localAbsoluteUrl);
+        const downloadPath = resolve(`../downloads/plex/cover-${trackId}.jpg`);
+
+        await this.downloadFile(url, downloadPath);
+
+        return downloadPath;
     }
 
     async getSongData(id) {
@@ -119,13 +136,13 @@ class PlexDownloader
         return {
             id: id,
             type: "plex",
-            id: String(trackInfo.guid), // trackInfo.ratingKey,
+            id: String(trackInfo.ratingKey),
             title: title,
             artist: artist,
             album: album,
             url: this.getPlexUrl(trackInfo.Media[0].Part[0].key),
             skipped: false,
-            cover: trackInfo.thumb,
+            cover: await this.downloadCover(trackInfo.thumb, id),
             createAudioResource: this.createAudioResource
         }
     }

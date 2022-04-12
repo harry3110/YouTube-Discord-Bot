@@ -142,7 +142,7 @@ client.on("interactionCreate", async interaction => {
                 // Get song information
                 let song_data = await downloader.getSongData(song_id);
 
-                console.log(song_data);
+                console.log("Adding song to queue", song_data);
 
                 // Add song to queue
                 queue.addOrPlay(song_data);

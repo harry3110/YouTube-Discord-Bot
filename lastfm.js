@@ -38,9 +38,6 @@ class lastFmAsync {
 
         let sizes = ["extralarge", "large", "medium", "small"];
 
-        // Get sizes from the 'size' variable and smaller
-        sizes = sizes.slice(sizes.indexOf(size));
-
         if (data.error) {
             return data.error;
         } else {

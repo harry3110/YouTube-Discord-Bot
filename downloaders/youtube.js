@@ -3,6 +3,7 @@ const {google} = require('googleapis');
 const { from_string } = require('libsodium-wrappers');
 const fs = require('fs');
 const { AudioResource, createAudioResource, demuxProbe } = require('@discordjs/voice');
+const Downloader = require('./downloader');
 
 const youtube = google.youtube({
     version: 'v3',
@@ -12,7 +13,7 @@ const youtube = google.youtube({
 // Youtube DL
 const ytdl = require('youtube-dl-exec');
 
-class YouTubeDownloader
+class YouTubeDownloader extends Downloader
 {
     /**
      * Search for a song through youtube
@@ -20,6 +21,20 @@ class YouTubeDownloader
      * @param {*} query 
      */
     async searchSongs(query) {
+        let songs;
+
+        songs = await this.searchByYouTubeAPI(query);
+        if (songs.length > 0) {
+            return songs;
+        }
+        
+        console.log(" - Falling back to YouTube scraper");
+        songs = await this.searchByYouTubeScraper(query);
+
+        return songs;
+    }
+
+    async searchByYouTubeAPI(query) {
         let response = await youtube.search.list({
             part: 'snippet',
             type: 'video',
@@ -30,14 +45,23 @@ class YouTubeDownloader
             videoCategoryId: 10     // Music
         }).then(res => {
             return res.data;
-            console.log(res.data);
         }).catch(error => {
-            console.error(error);
+            let errors = error.errors;
+
+            console.log("Error searching for song: " + query);
+
+            for (let i = 0; i < errors.length; i++) {
+                if (errors[i].reason === "quotaExceeded") {
+                    console.log(" - Quota exceeded");
+                } else {
+                    console.log(" - " + errors[i].message);
+                }
+            }
+
             return false;
         });
 
         if (response === false) {
-            console.log("Error searching for songs");
             return [];
         }
 
@@ -58,6 +82,37 @@ class YouTubeDownloader
         });
 
         return songs;
+    }
+
+    async searchByYouTubeScraper(query) {
+        const { search } = require('scrape-youtube');
+
+        const headers = {
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36',
+            'accept-language': 'en-US,en;q=0.9',
+            'accept-encoding': 'gzip, deflate, br',
+            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+            'referer': 'https://youtube.com/'
+        }
+
+        const options = {
+            type: 'video',
+            requestOptions: {
+                headers: headers
+            }
+        }
+
+        let result = await search(query, options);
+
+        return [
+            {
+                id: result.id,
+                title: result.title,
+                artist: result.channel.name,
+                thumbnail: result.thumbnail,
+                publishDate: result.uploaded
+            }
+        ];
     }
 
     async getCover(title, artist, album) {

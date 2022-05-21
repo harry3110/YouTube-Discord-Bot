@@ -44,7 +44,7 @@ module.exports = {
             return;
         }
 
-        let page = (interaction.options.getInteger("page") ?? 1);
+        let page = interaction.options.getInteger("page") ?? 1;
         let index = page--;
 
         if (recentSongs.length > pageSize) {

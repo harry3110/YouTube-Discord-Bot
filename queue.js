@@ -1,7 +1,7 @@
 const discordVoice = require('@discordjs/voice');
 const { channel } = require('diagnostics_channel');
 const discord = require('discord.js');
-const fs = require('fs');
+const lastfm = require('./lastfm');
 
 colors = {
     'aqua': 0x5abdd1,       // Search and queue
@@ -25,6 +25,11 @@ class Queue
     lastInteraction = null;
 
     paused = false;
+
+    /**
+     * @param {Downloader} downloader
+     */
+    downloader = null;
 
     /**
      * @param {VoiceConnection} connection
@@ -54,6 +59,10 @@ class Queue
     
     setLastInteraction(interaction) {
         this.lastInteraction = interaction;
+    }
+
+    setDownloader(downloader) {
+        this.downloader = downloader;
     }
 
     async maybeJoinVoiceChannel() {
@@ -236,6 +245,38 @@ class Queue
         
         this.client.user.setActivity("music", {
             type: "LISTENING"
+        });
+    }
+
+    async addSimilarSongs(amount) {
+        // id, title, artist, album, url, skipped, cover, createAudioResource
+
+        // currentSongs.push(this.getCurrentSong());
+
+        console.log("Adding similar songs for queue");
+
+        this.getSongQueue().forEach(async song => {
+            let similarSongs = await lastfm.getSimilarTracks(song.title, song.artist);
+
+            console.log(similarSongs);
+
+            console.log(` - Adding similar songs for ${song.title} by ${song.artist}`);
+
+            similarSongs.forEach(async similarSong => {
+                const title = similarSong.name;
+                const artist = similarSong.artist.name;
+
+                let search = await this.downloader.searchSongs(`${title} ${artist}`);
+
+                console.log(` - Found ${search.length} similar songs`);
+
+                if (search.length > 0) {
+                    let song = search[0];
+
+                    console.log(` - Adding ${title} by ${artist}`);
+                    await this.addSong(song);
+                }
+            });
         });
     }
 }

@@ -8,7 +8,6 @@ const fs = require('fs');
 
 // Discord JS
 const discord = require('discord.js');
-const { Routes } = require('discord-api-types/v9');
 
 // Downloader
 const downloader = require("./downloaders/youtube.js");
@@ -16,7 +15,7 @@ const downloader = require("./downloaders/youtube.js");
 // Associative array of all songs in queue. Key is the guild ID, value is an array of songs.
 const Queue = require("./queue.js");
 
-colors = {
+const colors = {
     'aqua': 0x5abdd1,       // Search and queue
     'red': 0xa11a1a,        // Errors
     'orange': 0xdbbb1a,     // Currently playing
@@ -40,6 +39,7 @@ console.log("Registering commands:");
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
+
 	client.commands.set(command.data.name, command);
     console.log(` - ${command.data.name} (./commands/${file})`);
 }
@@ -94,21 +94,11 @@ client.on("interactionCreate", async interaction => {
             queue.setVoiceChannel(interaction.member.voice.channel);
             queue.setTextChannel(interaction.channel);
             queue.setLastInteraction(interaction);
+            queue.setDownloader(downloader);
 
             await command.execute(interaction, queue);
-
-            // If there is a response, set the queue to it
-            /* if (command_response) {
-                queue = command_response.queue;
-            } */
+            
         } else if (interaction.isSelectMenu()) {
-            // If select method exists
-            /* if (command.onSelect) {
-                await command.onSelect(interaction);
-            } */
-
-            // console.log(interaction);
-
             let select_id = interaction.customId;
             let values = interaction.values;
 

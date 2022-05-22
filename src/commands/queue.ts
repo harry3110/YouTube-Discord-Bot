@@ -1,6 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed } = require('discord.js');
-const Queue = require('../queue');
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { MessageEmbed } from 'discord.js';
+import { Queue } from "../queue.js";
 
 const colors = {
     'aqua': 0x5abdd1,       // Search and queue
@@ -11,8 +11,8 @@ const colors = {
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('nowplaying')
-        .setDescription("Shows the current song"),
+		.setName('queue')
+        .setDescription("Shows the current queue"),
         
     /**
      * 
@@ -21,16 +21,23 @@ module.exports = {
      */
 	async execute(interaction, queue) {
         let embed = new MessageEmbed()
-            .setTitle("Currently Playing")
+            .setTitle("Current queue")
             .setColor(colors.aqua)
         ;
 
         if (queue.getCurrentSong()) {
             let song = queue.getCurrentSong();
-            embed.addField(song.title,  + " - " + song.artist + (song.album ? " - " + song.album : ""), false);
+            embed.addField("Currently playing", song.title + " - " + song.artist, false);
             embed.setThumbnail(song.cover)
+        }
+
+        if (queue.getSongQueue().length === 0) {
+            embed.setDescription("Queue is empty");
         } else {
-            embed.setDescription("No song currently playing");
+            // Loop through each song in the queue
+            queue.getSongQueue().forEach((song, index) => {
+                embed.addField(`[${index + 1}] ${song.title}`, song.artist + (song.album ? " - " + song.album : ""), false);
+            });
         }
 
         await interaction.reply({

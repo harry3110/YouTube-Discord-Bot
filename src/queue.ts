@@ -1,9 +1,9 @@
-const discordVoice = require('@discordjs/voice');
-const { channel } = require('diagnostics_channel');
-const discord = require('discord.js');
-const lastfm = require('./lastfm');
+import { joinVoiceChannel, createAudioPlayer, getVoiceConnection, AudioPlayerStatus, AudioResource } from '@discordjs/voice';
+import { MessageEmbed,  } from 'discord.js';
+import { lastfm } from './lastfm';
+import { Song } from './song-interface';
 
-colors = {
+const colors = {
     'aqua': 0x5abdd1,       // Search and queue
     'red': 0xa11a1a,        // Errors
     'orange': 0xdbbb1a,     // Currently playing
@@ -12,9 +12,9 @@ colors = {
 
 class Queue
 {
-    songQueue = [];
-    pastSongs = [];
-    currentSong = null;
+    songQueue: Array<Song> = [];
+    pastSongs: Array<Song> = [];
+    currentSong: Song|null = null;
     
     guildId = null;
     voiceChannel = null;    // The actual channel
@@ -72,15 +72,15 @@ class Queue
         // console.log(this.textChannel ?? "No text channel");
 
         // Join the voice channel
-        this.connection = discordVoice.joinVoiceChannel({
+        this.connection = joinVoiceChannel({
             channelId: this.voiceChannel.id,
             guildId: this.guildId,
             adapterCreator: this.voiceChannel.guild.voiceAdapterCreator
         });
         
         // Create audio player
-        this.player = discordVoice.createAudioPlayer();
-        this.subscription = discordVoice.getVoiceConnection(this.guildId).subscribe(this.player);
+        this.player = createAudioPlayer();
+        this.subscription = getVoiceConnection(this.guildId).subscribe(this.player);
 
         
 		// Configure audio player
@@ -92,11 +92,11 @@ class Queue
 
             // States: 'bufferering', 'idle', 'playing', 'paused'
 
-            if (newState.status === discordVoice.AudioPlayerStatus.Idle && oldState.status !== discordVoice.AudioPlayerStatus.Idle) {
+            if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
                 // Play next song, if the current song has finished playing or has been skipped
                 void this.playNextOrLeave();
 
-            } else if (newState.status === discordVoice.AudioPlayerStatus.Playing) {
+            } else if (newState.status === AudioPlayerStatus.Playing) {
                 // Playing new song
 
                 let song = this.getCurrentSong();
@@ -108,7 +108,7 @@ class Queue
 
                 if (this.textChannel) {
                     // Send message when the song starts playing
-                    let embed = new discord.MessageEmbed()
+                    let embed = new MessageEmbed()
                         .setTitle(`Now playing  ${song.title} by ${song.artist}!`)
                         .setColor(colors.green)
                         .setThumbnail(song.cover)
@@ -134,7 +134,7 @@ class Queue
     async addSong(song) {
         this.songQueue.push(song);
 
-        let embed = new discord.MessageEmbed()
+        let embed = new MessageEmbed()
             .setTitle(`Added ${song.title} by ${song.artist} to queue!`)
             .setDescription(`In position #${this.songQueue.length}`)
             .setColor(colors.aqua)
@@ -224,7 +224,7 @@ class Queue
             this.paused = false;
         }
 
-        let embed = new discord.MessageEmbed()
+        let embed = new MessageEmbed()
             .setTitle(`${this.paused ? "Paused" : "Resumed"} the song!`)
             .setColor(colors.green)
         ;
@@ -248,10 +248,14 @@ class Queue
         });
     }
 
-    async addSimilarSongs(amount) {
+    async addSimilarSongs(amount: number) {
         // id, title, artist, album, url, skipped, cover, createAudioResource
 
         // currentSongs.push(this.getCurrentSong());
+
+        if (this.downloader === null) {
+            return;
+        }
 
         console.log("Adding similar songs for queue");
 
@@ -281,4 +285,4 @@ class Queue
     }
 }
 
-module.exports = Queue;
+export { Queue };

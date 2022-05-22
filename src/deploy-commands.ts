@@ -2,9 +2,10 @@
  * This files is used for deploying commands to a guild.
  */
 
-const fs = require('node:fs');
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
+import * as fs from 'node:fs';
+import { REST } from '@discordjs/rest';
+import { Routes } from 'discord-api-types/v9';
+
 const config = require('dotenv').config()
 
 const commands = [];

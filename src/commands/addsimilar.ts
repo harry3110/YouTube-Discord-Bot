@@ -1,6 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
-const Queue = require('../queue').default;
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { MessageEmbed, MessageActionRow, MessageButton } from 'discord.js';
+import { Queue } from "../queue.js";
 
 const colors = {
     'aqua': 0x5abdd1,       // Search and queue

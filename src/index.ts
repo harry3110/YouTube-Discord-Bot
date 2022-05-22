@@ -1,19 +1,20 @@
 // Config
 const config = require('dotenv').config();
-
 const discord_token = process.env.DISCORD_TOKEN;
 
-// Node
-const fs = require('fs');
-
-// Discord JS
-const discord = require('discord.js');
+// Dependancies
+import { readdirSync } from 'fs';
+import { Client, Intents, Collection, MessageEmbed } from 'discord.js';
 
 // Downloader
-const downloader = require("./downloaders/youtube.js");
+import { YouTubeDownloader as Downloader } from "./downloaders/youtube";
+let downloader = new Downloader();
 
-// Associative array of all songs in queue. Key is the guild ID, value is an array of songs.
-const Queue = require("./queue.js");
+// Queue object
+import { Queue } from "./queue.js";
+
+// Set current working directory (to /dist)
+process.chdir(__dirname);
 
 const colors = {
     'aqua': 0x5abdd1,       // Search and queue
@@ -23,35 +24,35 @@ const colors = {
 }
 
 // Create a client
-const client = new discord.Client({
+const client: any = new Client({
     intents: [
-        discord.Intents.FLAGS.GUILDS,
-        discord.Intents.FLAGS.GUILD_MESSAGES,
-        discord.Intents.FLAGS.GUILD_VOICE_STATES
+        Intents.FLAGS.GUILDS,
+        Intents.FLAGS.GUILD_MESSAGES,
+        Intents.FLAGS.GUILD_VOICE_STATES
     ]
 });
 
 // Register slash commands
-client.commands = new discord.Collection();
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+client.commands = new Collection();
+const commandFiles = readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 console.log("Registering commands:");
 
 for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
+    const command = require(`./commands/${file}`);
 
-	client.commands.set(command.data.name, command);
+    client.commands.set(command.data.name, command);
     console.log(` - ${command.data.name} (./commands/${file})`);
 }
 
 /**
- * @param {Queue} queue
- */
+* @param {Queue} queue
+*/
 let queue = new Queue(client, null, null, null);
 
 // On client ready
 client.once('ready', async () => {
-	console.log(`Logged in as ${client.user.username}`);
+    console.log(`Logged in as ${client.user.username}`);
 
     client.user.setActivity("music", {
         type: "LISTENING"
@@ -65,7 +66,7 @@ client.on("interactionCreate", async interaction => {
             const command = client.commands.get(interaction.commandName);
             
             if (!command) {
-                let embed = new discord.MessageEmbed();
+                let embed = new MessageEmbed();
 
                 embed.setTitle("There is no command with that name..");
                 embed.setColor(colors.red);
@@ -78,7 +79,7 @@ client.on("interactionCreate", async interaction => {
             }
 
             if ("enabled" in command && !command.enabled) {
-                let embed = new discord.MessageEmbed();
+                let embed = new MessageEmbed();
 
                 embed.setTitle("This command is not enabled..");
                 embed.setColor(colors.red);
@@ -103,10 +104,10 @@ client.on("interactionCreate", async interaction => {
             let values = interaction.values;
 
             if (select_id === "song_choices") {
-                video_id = values[0];
+                const video_id = values[0];
 
                 if (video_id === "cancel") {
-                    let embed = new discord.MessageEmbed();
+                    let embed = new MessageEmbed();
 
                     embed.setTitle("Search cancelled.");
                     embed.setColor(colors.red);
@@ -119,7 +120,7 @@ client.on("interactionCreate", async interaction => {
                     return;
                 }
                 
-                let embed = new discord.MessageEmbed()
+                let embed = new MessageEmbed()
                     .setTitle(`Adding song to queue...`)
                     .setColor(colors.orange)
                 ;
@@ -130,12 +131,12 @@ client.on("interactionCreate", async interaction => {
                 });
 
                 // Get song information
-                let song_data = await downloader.getSongData(video_id);
+                let song_data = downloader.getSongData(video_id);
 
                 // Add song to queue
                 queue.addOrPlay(song_data);
             } else {
-                let embed = new discord.MessageEmbed()
+                let embed = new MessageEmbed()
                     .setTitle(`There was an error with your selection.`)
                     .setColor(colors.red)
                 ;

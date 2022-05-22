@@ -1,6 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageActionRow, MessageButton, MessageSelectMenu, MessageEmbed } = require('discord.js');
-const downloader = require("../downloaders/youtube");
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { MessageActionRow, MessageButton, MessageSelectMenu, MessageEmbed } from 'discord.js';
+import { YouTubeDownloader as Downloader } from "../downloaders/youtube";
 
 const emojis = {
     0: "0️⃣",
@@ -32,6 +32,8 @@ module.exports = {
                 .setRequired(true)),
         
 	async execute(interaction, queue) {
+        const downloader = new Downloader();
+
         let songName = interaction.options.getString("song_name");
 
         let initialEmbed = new MessageEmbed()

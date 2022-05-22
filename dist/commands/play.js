@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const builders_1 = require("@discordjs/builders");
 const discord_js_1 = require("discord.js");
-const youtube_1 = require("../downloaders/youtube");
+const downloader_1 = require("../downloaders/downloader");
 const emojis = {
     0: "0️⃣",
     1: "1️⃣",
@@ -29,7 +29,7 @@ module.exports = {
         .setDescription('The name of the song to play or add to queue')
         .setRequired(true)),
     async execute(interaction, queue) {
-        const downloader = new youtube_1.YouTubeDownloader();
+        const downloader = downloader_1.getDownloader();
         let songName = interaction.options.getString("song_name");
         let initialEmbed = new discord_js_1.MessageEmbed()
             .setTitle("Searching for songs...")

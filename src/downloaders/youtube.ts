@@ -44,9 +44,7 @@ class YouTubeDownloader extends Downloader
      * @param {*} query 
      */
     async searchSongs(query: string, limit = 9): Promise<SongSearchResult[]> {
-        let songs;
-
-        songs = await this.searchByYouTubeAPI(query, limit);
+        let songs = await this.searchByYouTubeAPI(query, limit);
         
         if (songs.length > 0) {
             return songs;

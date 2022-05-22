@@ -1,6 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Downloader = void 0;
+exports.Downloader = exports.getDownloader = void 0;
+const config = require('dotenv').config();
+function getDownloader() {
+    if (process.env.DOWNLOADER === 'plex') {
+        const { PlexDownloader } = require('./plex');
+        return new PlexDownloader();
+    }
+    const { YouTubeDownloader } = require("./youtube");
+    return new YouTubeDownloader();
+}
+exports.getDownloader = getDownloader;
 class Downloader {
     async searchSongs(query) {
         return [];

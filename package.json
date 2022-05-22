@@ -26,8 +26,8 @@
         "tslib": "^2.4.0",
         "typescript": "^4.6.4",
         "youtube-dl-exec": "^2.0.7",
-        "youtubei": "^0.0.1-rc.35"
-        "plex-api": "^5.3.2",
+        "youtubei": "^0.0.1-rc.35",
+        "plex-api": "^5.3.2"
     },
     "devDependencies": {
         "@types/node": "^17.0.35",

@@ -2,17 +2,17 @@
 const config = require('dotenv').config();
 const discord_token = process.env.DISCORD_TOKEN;
 
-// Dependancies
+// Dependancies - node modules
 import { readdirSync } from 'fs';
 import { Client, Intents, Collection, MessageEmbed } from 'discord.js';
 
-// Downloader
-import { YouTubeDownloader as Downloader } from "./downloaders/youtube";
-let downloader = new Downloader();
-
-// Queue object
+// Dependancies - Custom
 import { Queue } from "./queue.js";
 import { Song } from './song-interface';
+import { getDownloader } from './downloaders/downloader.js';
+
+// Downloader
+let downloader = getDownloader();
 
 // Set current working directory (to /dist)
 process.chdir(__dirname);
@@ -133,6 +133,8 @@ client.on("interactionCreate", async interaction => {
 
                 // Get song information
                 let song_data: Song = await downloader.getSongData(video_id);
+
+                console.log("Song data", song_data);
 
                 // Add song to queue
                 queue.addOrPlay(song_data);

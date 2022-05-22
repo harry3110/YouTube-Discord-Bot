@@ -8,6 +8,9 @@ import { Routes } from 'discord-api-types/v9';
 
 const config = require('dotenv').config()
 
+// Set current directory
+process.chdir(__dirname);
+
 const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 

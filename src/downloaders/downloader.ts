@@ -21,7 +21,7 @@ class Downloader
         return await lastfm.getCoverUrl(title, artist);
     }
 
-    getSongData(video_id: string): Promise<Song|null> {
+    async getSongData(video_id: string): Promise<Song|null> {
         return null;
     }
 

@@ -1,3 +1,24 @@
+interface LastFmImage {
+    '#text': string; // URL to image
+    size: string;
+}
+
+interface LastFmSimilarTrack {
+    name: string;
+    artist: {
+        name: string;
+        url: string; // Last FM URL
+    },
+    image: LastFmImage[],
+    match: number;
+    playcount: number;
+    streamable: {
+        "#text": string;
+        fulltrack: string;
+    }
+    url: string;
+}
+
 class lastFm {
     lfm = null;
 
@@ -48,7 +69,7 @@ class lastFm {
         }
     }
 
-    async getSimilarTracks(title, artist, autocorrect = true) {
+    async getSimilarTracks(title, artist, autocorrect = true): LastFmSimilarTrack {
         let data: any = await this.request("track.getSimilar", {
             track: title,
             artist: artist,

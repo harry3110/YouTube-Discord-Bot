@@ -11,7 +11,7 @@ class Downloader {
         artist = String(artist).toLowerCase();
         return await lastfm.getCoverUrl(title, artist);
     }
-    getSongData(video_id) {
+    async getSongData(video_id) {
         return null;
     }
     async downloadSong(video_id) {

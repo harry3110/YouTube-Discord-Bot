@@ -78,17 +78,19 @@ class Queue {
         });
         console.log(`Joined voice channel: ${this.voiceChannel.name}`);
     }
-    async addSong(song) {
+    async addSong(song, editLastInteraction = true) {
         this.songQueue.push(song);
-        let embed = new discord_js_1.MessageEmbed()
-            .setTitle(`Added ${song.title} by ${song.artist} to queue!`)
-            .setDescription(`In position #${this.songQueue.length}`)
-            .setColor(colors.aqua)
-            .setThumbnail(song.cover);
-        await this.lastInteraction.editReply({
-            embeds: [embed],
-            components: []
-        });
+        if (editLastInteraction) {
+            let embed = new discord_js_1.MessageEmbed()
+                .setTitle(`Added ${song.title} by ${song.artist} to queue!`)
+                .setDescription(`In position #${this.songQueue.length}`)
+                .setColor(colors.aqua)
+                .setThumbnail(song.cover);
+            await this.lastInteraction.editReply({
+                embeds: [embed],
+                components: []
+            });
+        }
     }
     async addOrPlay(song) {
         await this.addSong(song);
@@ -172,22 +174,31 @@ class Queue {
             return;
         }
         console.log("Adding similar songs for queue");
+        let similarSongs = [];
+        similarSongs.push(await this.getSimilarSongs(this.getCurrentSong(), amount));
         this.getSongQueue().forEach(async (song) => {
-            let similarSongs = await lastfm_1.lastfm.getSimilarTracks(song.title, song.artist);
-            console.log(similarSongs);
-            console.log(` - Adding similar songs for ${song.title} by ${song.artist}`);
-            similarSongs.forEach(async (similarSong) => {
-                const title = similarSong.name;
-                const artist = similarSong.artist.name;
-                let search = await this.downloader.searchSongs(`${title} ${artist}`);
-                console.log(` - Found ${search.length} similar songs`);
-                if (search.length > 0) {
-                    let song = search[0];
-                    console.log(` - Adding ${title} by ${artist}`);
-                    await this.addSong(song);
-                }
-            });
+            similarSongs.push(...await this.getSimilarSongs(song, amount));
         });
+        similarSongs.forEach(async (song) => {
+            await this.addSong(song, false);
+            console.log(` - Added ${song.title} by ${song.artist}`);
+        });
+    }
+    async getSimilarSongs(song, amount) {
+        let lfmSimilar = await lastfm_1.lastfm.getSimilarTracks(song.title, song.artist);
+        console.log(lfmSimilar);
+        console.log(` - Adding similar songs for ${song.title} by ${song.artist}`);
+        let similarSongs = [];
+        lfmSimilar.forEach(async (similarSong) => {
+            const title = similarSong.name;
+            const artist = similarSong.artist.name;
+            let search = await this.downloader.searchSongs(`${title} ${artist}`);
+            console.log(` - Found ${search.length} similar songs`);
+            if (search.length > 0) {
+                similarSongs.push(search[0]);
+            }
+        });
+        return similarSongs;
     }
 }
 exports.Queue = Queue;

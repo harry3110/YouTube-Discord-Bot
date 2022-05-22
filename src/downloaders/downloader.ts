@@ -1,6 +1,14 @@
 import { AudioResource } from '@discordjs/voice';
 import { Song } from 'src/song-interface';
 
+export interface SongSearchResult {
+    id: string;
+    title: string;
+    artist: string;
+    publishDate: string;
+    thumbnail: string;
+}
+
 class Downloader
 {
     /**
@@ -8,7 +16,7 @@ class Downloader
      * 
      * @param {*} query 
      */
-    async searchSongs(query: string) {
+    async searchSongs(query: string): Promise<SongSearchResult[]> {
         return []
     }
 

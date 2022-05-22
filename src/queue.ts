@@ -1,5 +1,6 @@
 import { joinVoiceChannel, createAudioPlayer, getVoiceConnection, AudioPlayerStatus, AudioResource } from '@discordjs/voice';
 import { MessageEmbed,  } from 'discord.js';
+import { SongSearchResult } from './downloaders/downloader';
 import { lastfm } from './lastfm';
 import { Song } from './song-interface';
 
@@ -249,7 +250,7 @@ class Queue
         });
     }
 
-    async addSimilarSongs(amount: number) {
+    async addSimilarSongsFromQueue(amount: number = 10) {
         // id, title, artist, album, url, skipped, cover, createAudioResource
 
         // currentSongs.push(this.getCurrentSong());
@@ -262,43 +263,39 @@ class Queue
 
         let similarSongs = [];
 
-        // Get queue and current song
-        similarSongs.push(await this.getSimilarSongs(this.getCurrentSong(), amount));
-
-        this.getSongQueue().forEach(async song => {
-            similarSongs.push(...await this.getSimilarSongs(song, amount));
-        });
-
-        // Add similar songs to queue
-        similarSongs.forEach(async song => {
-            await this.addSong(song, false);
-            console.log(` - Added ${song.title} by ${song.artist}`);
-        });
+        // Combine currently playing song with the queue
+        let songs = this.getSongQueue().concat(this.getCurrentSong());
+        
+        // Add songs for each of the similar tracks from last fm
+        for (let song of songs) {
+            this.addSimilarSongs(song, Math.round(amount / songs.length));
+        }
     }
 
-    private async getSimilarSongs(song: Song, amount: number): Promise<Array<any>> {
+    private async addSimilarSongs(song: Song, limit: number) {
         let lfmSimilar = await lastfm.getSimilarTracks(song.title, song.artist);
 
-        console.log(lfmSimilar);
+        lfmSimilar = lfmSimilar.slice(0, limit);
 
         console.log(` - Adding similar songs for ${song.title} by ${song.artist}`);
 
-        let similarSongs = [];
+        // Loop through the similar songs and add to array
+        for (let similarSong of lfmSimilar) {
+            let title = similarSong.name;
+            let artist = similarSong.artist.name;
 
-        lfmSimilar.forEach(async similarSong => {
-            const title = similarSong.name;
-            const artist = similarSong.artist.name;
+            // Search for song
+            let search: SongSearchResult[] = await this.downloader.searchSongs(`${title} ${artist}`, 1);
 
-            let search = await this.downloader.searchSongs(`${title} ${artist}`);
+            console.log(` - Found ${search.length} similar song(s)`);
 
-            console.log(` - Found ${search.length} similar songs`);
-
+            // Add song, if there is at least one result
             if (search.length > 0) {
-                similarSongs.push(search[0]);
+                let songData: Song|null = await this.downloader.getSongData(search[0].id);
+                
+                this.addSong(songData, false);
             }
-        });
-
-        return similarSongs;
+        }
     }
 }
 

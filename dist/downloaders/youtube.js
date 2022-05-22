@@ -13,25 +13,32 @@ const youtube = google.youtube({
 });
 const ytdl = require('youtube-dl-exec');
 class YouTubeDownloader extends downloader_1.Downloader {
-    async searchSongs(query) {
+    async searchSongs(query, limit = 9) {
         let songs;
-        songs = await this.searchByYouTubeAPI(query);
-        if (songs) {
+        songs = await this.searchByYouTubeAPI(query, limit);
+        if (songs.length > 0) {
             return songs;
         }
         console.log("No songs found with YouTube API");
         console.log(" - Falling back to YouTube scraper");
-        songs = await this.searchByYouTubeScraper(query);
+        songs = await this.searchByYouTubeScraper(query, limit);
+        if (songs.length > 0) {
+            console.log(` - Found ${songs.length} songs using scraper`);
+        }
+        else {
+            console.log(" - No songs found with scraper");
+        }
+        songs = songs.slice(0, limit);
         return songs;
     }
-    async searchByYouTubeAPI(query) {
+    async searchByYouTubeAPI(query, limit = 9) {
         let results = null;
         try {
             let response = await youtube.search.list({
                 part: 'snippet',
                 type: 'video',
                 q: query,
-                maxResults: 9,
+                maxResults: limit,
                 safeSearch: 'moderate',
                 videoEmbeddable: true,
                 videoCategoryId: 10
@@ -49,36 +56,38 @@ class YouTubeDownloader extends downloader_1.Downloader {
                     console.log(" - " + errors[i].message);
                 }
             }
-            return false;
+            return [];
         }
-        let songs = {};
+        let songs = [];
         results.forEach(result => {
             let snippet = result.snippet;
             let thumbnails = snippet.thumbnails;
-            songs[result.id.videoId] = {
+            songs.push({
+                id: result.id.videoId,
                 title: snippet.title,
                 artist: snippet.channelTitle,
                 publishDate: snippet.publishedAt,
                 thumbnail: thumbnails.high.url,
-            };
+            });
         });
         return songs;
     }
-    async searchByYouTubeScraper(query) {
+    async searchByYouTubeScraper(query, limit = 9) {
         console.log("Querying for song: " + query);
         let scraper = new youtubei_1.Client();
         const videos = await scraper.search(query, {
             type: "video",
         });
-        let songs = {};
+        videos.slice(0, limit);
+        let songs = [];
         videos.forEach(video => {
-            songs[video.id] = {
+            songs.push({
                 id: video.id,
                 title: video.title,
                 artist: video.channel.name,
                 thumbnail: video.thumbnails[0].url,
                 publishDate: video.uploadDate
-            };
+            });
         });
         return songs;
     }

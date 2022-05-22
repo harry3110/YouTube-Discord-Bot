@@ -19,23 +19,30 @@ module.exports = {
                 .setRequired(false)
         ),
 
-    /**
-     * 
-     * @param {*} interaction 
-     * @param {Queue} queue 
-     */
-	async execute(interaction, queue) {
+	async execute(interaction, queue: Queue) {
         let embed = new MessageEmbed()
             .setTitle("Adding similar songs...")
             .setColor(colors.aqua)
         ;
-        
-        console.log("About to add similar songs");
-        await queue.addSimilarSongs(interaction.options.getInteger('amount') ?? 30);
 
         // Send embed
         await interaction.reply({
             embeds: [embed]
+        });
+        
+        console.log("About to add similar songs");
+
+        queue.addSimilarSongsFromQueue(interaction.options.getInteger('amount') ?? 10).then(() => {
+            // Edit embed
+            let embed = new MessageEmbed()
+                .setTitle(`Added similar songs to queue!`)
+                .setColor(colors.aqua)
+            ;
+
+            interaction.editReply({
+                embeds: [embed],
+                components: []
+            });
         });
 	},
 };

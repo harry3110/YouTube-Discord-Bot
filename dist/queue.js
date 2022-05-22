@@ -169,36 +169,31 @@ class Queue {
             type: "LISTENING"
         });
     }
-    async addSimilarSongs(amount) {
+    async addSimilarSongsFromQueue(amount = 10) {
         if (this.downloader === null) {
             return;
         }
         console.log("Adding similar songs for queue");
         let similarSongs = [];
-        similarSongs.push(await this.getSimilarSongs(this.getCurrentSong(), amount));
-        this.getSongQueue().forEach(async (song) => {
-            similarSongs.push(...await this.getSimilarSongs(song, amount));
-        });
-        similarSongs.forEach(async (song) => {
-            await this.addSong(song, false);
-            console.log(` - Added ${song.title} by ${song.artist}`);
-        });
+        let songs = this.getSongQueue().concat(this.getCurrentSong());
+        for (let song of songs) {
+            this.addSimilarSongs(song, Math.round(amount / songs.length));
+        }
     }
-    async getSimilarSongs(song, amount) {
+    async addSimilarSongs(song, limit) {
         let lfmSimilar = await lastfm_1.lastfm.getSimilarTracks(song.title, song.artist);
-        console.log(lfmSimilar);
+        lfmSimilar = lfmSimilar.slice(0, limit);
         console.log(` - Adding similar songs for ${song.title} by ${song.artist}`);
-        let similarSongs = [];
-        lfmSimilar.forEach(async (similarSong) => {
-            const title = similarSong.name;
-            const artist = similarSong.artist.name;
-            let search = await this.downloader.searchSongs(`${title} ${artist}`);
-            console.log(` - Found ${search.length} similar songs`);
+        for (let similarSong of lfmSimilar) {
+            let title = similarSong.name;
+            let artist = similarSong.artist.name;
+            let search = await this.downloader.searchSongs(`${title} ${artist}`, 1);
+            console.log(` - Found ${search.length} similar song(s)`);
             if (search.length > 0) {
-                similarSongs.push(search[0]);
+                let songData = await this.downloader.getSongData(search[0].id);
+                this.addSong(songData, false);
             }
-        });
-        return similarSongs;
+        }
     }
 }
 exports.Queue = Queue;

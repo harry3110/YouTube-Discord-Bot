@@ -47,24 +47,19 @@ module.exports = {
         });
 
         // Get songs
-        let songs = await downloader.searchSongs(songName);
+        let songs = await downloader.searchSongs(songName, 9);
         
         let select_options = [];
         let emoji = 1;
 
-        for (let song_id in songs) {
-            let song = songs[song_id];
-
-            // Add song to select
-            select_options.push({
+        select_options = songs.map(song => {
+            return {
                 label: song.title.substring(0, 100),
-                value: song_id,
+                value: song.id,
                 description: song.artist.substring(0, 100),
                 emoji: emojis[emoji++]
-            })
-        }
-
-        console.log(select_options);
+            }
+        });
 
         // Cancel option
         select_options.push({

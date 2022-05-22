@@ -4,7 +4,7 @@ import VideoCompact from '../../node_modules/youtubei/dist/classes/VideoCompact'
 
 import { existsSync } from 'fs';
 import { AudioResource, createAudioResource, demuxProbe } from '@discordjs/voice';
-import { Downloader } from './downloader';
+import { Downloader, SongSearchResult } from './downloader';
 import { Song } from '../song-interface';
 import { lastfm } from '../lastfm';
 
@@ -43,24 +43,32 @@ class YouTubeDownloader extends Downloader
      * 
      * @param {*} query 
      */
-    async searchSongs(query: string) {
+    async searchSongs(query: string, limit = 9): Promise<SongSearchResult[]> {
         let songs;
 
-        songs = await this.searchByYouTubeAPI(query);
+        songs = await this.searchByYouTubeAPI(query, limit);
         
-        if (songs) {
+        if (songs.length > 0) {
             return songs;
         }
 
         console.log("No songs found with YouTube API");
         
         console.log(" - Falling back to YouTube scraper");
-        songs = await this.searchByYouTubeScraper(query);
+        songs = await this.searchByYouTubeScraper(query, limit);
+
+        if (songs.length > 0) {
+            console.log(` - Found ${songs.length} songs using scraper`);
+        } else {
+            console.log(" - No songs found with scraper");
+        }
+
+        songs = songs.slice(0, limit);
 
         return songs;
     }
 
-    async searchByYouTubeAPI(query: string) {
+    async searchByYouTubeAPI(query: string, limit = 9): Promise<SongSearchResult[]> {
         let results: YoutubeSearchVideo[]|null = null;
 
         try {
@@ -68,7 +76,7 @@ class YouTubeDownloader extends Downloader
                 part: 'snippet',
                 type: 'video',
                 q: query,
-                maxResults: 9,
+                maxResults: limit,
                 safeSearch: 'moderate',
                 videoEmbeddable: true,
                 videoCategoryId: 10     // Music
@@ -88,27 +96,28 @@ class YouTubeDownloader extends Downloader
                 }
             }
 
-            return false;
+            return [];
         }
 
-        let songs = {};
+        let songs = [];
 
         results.forEach(result => {
             let snippet = result.snippet;
             let thumbnails = snippet.thumbnails; // Object of small/medium/high thumbnails
 
-            songs[result.id.videoId] = {
+            songs.push({
+                id: result.id.videoId,
                 title: snippet.title,
                 artist: snippet.channelTitle,
                 publishDate: snippet.publishedAt,
                 thumbnail: thumbnails.high.url,
-            }
+            });
         });
 
         return songs;
     }
 
-    async searchByYouTubeScraper(query: string) {
+    async searchByYouTubeScraper(query: string, limit = 9): Promise<SongSearchResult[]> {
         console.log("Querying for song: " + query);
 
         let scraper = new youtubeScraper();
@@ -117,16 +126,19 @@ class YouTubeDownloader extends Downloader
             type: "video",
         });
 
-        let songs = {};
+        // Limit to 9 results
+        videos.slice(0, limit);
+
+        let songs = [];
 
         videos.forEach(video => {
-            songs[video.id] = {
+            songs.push({
                 id: video.id,
                 title: video.title,
                 artist: video.channel.name,
                 thumbnail: video.thumbnails[0].url,
                 publishDate: video.uploadDate
-            };
+            });
         });
 
         return songs;

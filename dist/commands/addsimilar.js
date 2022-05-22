@@ -19,10 +19,18 @@ module.exports = {
         let embed = new discord_js_1.MessageEmbed()
             .setTitle("Adding similar songs...")
             .setColor(colors.aqua);
-        console.log("About to add similar songs");
-        await queue.addSimilarSongs(interaction.options.getInteger('amount') ?? 30);
         await interaction.reply({
             embeds: [embed]
+        });
+        console.log("About to add similar songs");
+        queue.addSimilarSongsFromQueue(interaction.options.getInteger('amount') ?? 10).then(() => {
+            let embed = new discord_js_1.MessageEmbed()
+                .setTitle(`Added similar songs to queue!`)
+                .setColor(colors.aqua);
+            interaction.editReply({
+                embeds: [embed],
+                components: []
+            });
         });
     },
 };

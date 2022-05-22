@@ -71,7 +71,7 @@ class lastFm {
         }
     }
 
-    async getSimilarTracks(title, artist, autocorrect = true): Promise<LastFmSimilarTrack> {
+    async getSimilarTracks(title: string, artist: string, autocorrect: Boolean = true): Promise<LastFmSimilarTrack[]> {
         let data: any = await this.request("track.getSimilar", {
             track: title,
             artist: artist,

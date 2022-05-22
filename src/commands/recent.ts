@@ -1,6 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed } = require('discord.js');
-const Queue = require('../queue');
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { MessageEmbed } from 'discord.js';
+import { Queue } from "../queue.js";
 
 const colors = {
     'aqua': 0x5abdd1,       // Search and queue
@@ -44,7 +44,7 @@ module.exports = {
             return;
         }
 
-        let page = (interaction.options.getInteger("page") ?? 1);
+        let page = interaction.options.getInteger("page") ?? 1;
         let index = page--;
 
         if (recentSongs.length > pageSize) {

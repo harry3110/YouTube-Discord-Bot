@@ -1,7 +1,27 @@
-// Config
-const config = require('dotenv').config();
+import { URL } from "url";
 
-class lastFmAsync {
+interface LastFmImage {
+    '#text': string; // URL to image
+    size: string;
+}
+
+interface LastFmSimilarTrack {
+    name: string;
+    artist: {
+        name: string;
+        url: string; // Last FM URL
+    },
+    image: LastFmImage[],
+    match: number;
+    playcount: number;
+    streamable: {
+        "#text": string;
+        fulltrack: string;
+    }
+    url: string;
+}
+
+class lastFm {
     lfm = null;
 
     constructor(options) {
@@ -20,7 +40,7 @@ class lastFmAsync {
     }
 
     async getTrackInfo(title, artist, autocorrect = true) {
-        let data = await this.request("track.getInfo", {
+        let data: any = await this.request("track.getInfo", {
             track: title,
             artist: artist,
             autocorrect: autocorrect
@@ -33,13 +53,10 @@ class lastFmAsync {
         }
     }
 
-    async getCoverUrl(title, artist) {
+    async getCoverUrl(title: string, artist: string) {
         let data = await this.getTrackInfo(title, artist);
 
         let sizes = ["extralarge", "large", "medium", "small"];
-
-        // Get sizes from the 'size' variable and smaller
-        sizes = sizes.slice(sizes.indexOf(size));
 
         if (data.error) {
             return data.error;
@@ -54,8 +71,8 @@ class lastFmAsync {
         }
     }
 
-    async getSimilarTracks(title, artist, autocorrect = true) {
-        let data = await this.request("track.getSimilar", {
+    async getSimilarTracks(title: string, artist: string, autocorrect: Boolean = true): Promise<LastFmSimilarTrack[]> {
+        let data: any = await this.request("track.getSimilar", {
             track: title,
             artist: artist,
             autocorrect: autocorrect
@@ -69,28 +86,26 @@ class lastFmAsync {
     }
 }
 
-let asyncLF = new lastFmAsync({
+let lastfm = new lastFm({
     api_key: process.env.LF_API_KEY,
     // secret: process.env.LF_API_SECRET,
     useragent: "BeeBop/1.0.0"
 });
 
-// asyncLF.getSimilarTracks("The Sign", "Ace of Base").then(data => {
+// lastfm.getSimilarTracks("The Sign", "Ace of Base").then(data => {
 //     console.log(data);
 // });
 
-// asyncLF.getCoverUrl("Pretty girl", "Maggie lindemann").then(data => {
+// lastfm.getCoverUrl("Pretty girl", "Maggie lindemann").then(data => {
 //     console.log(data);
 // });
 
-/**
-similarSongs.push({
+/* similarSongs.push({
     title: track.name,
     artist: track.artist.name,
     // album: track.album.title,
     cover: image_url,
     match_chance: track.match,
-});
- */
+}); */
 
-module.exports = asyncLF;
+export { lastfm };

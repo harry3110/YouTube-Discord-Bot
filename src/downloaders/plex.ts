@@ -143,6 +143,12 @@ export class PlexDownloader extends Downloader
         }
     }
 
+    /**
+     * TODO This possible doesn't work
+     * 
+     * @param video_id 
+     * @returns 
+     */
     async downloadSong(video_id: string): Promise<string|Boolean> {
         let song = await this.getSongData(video_id);
 

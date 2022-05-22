@@ -58,7 +58,7 @@ export class PlexDownloader extends Downloader
         return await plex.query(url);
     }
 
-    async searchSongs(query): Promise<SongSearchResult[]> {
+    async searchSongs(query: string): Promise<SongSearchResult[]> {
         let results = await this.getTracks(query);
 
         // Get tracks of search
@@ -102,13 +102,14 @@ export class PlexDownloader extends Downloader
     }
 
     async downloadFile(url: string, downloadPath: string) {
-        const res = await fetch(url);
-        const fileStream = createWriteStream(downloadPath);
+        let file = createWriteStream(downloadPath);
 
-        return await new Promise((resolve, reject) => {
-            res.body.pipe(fileStream);
-            res.body.on("error", reject);
-            fileStream.on("finish", resolve);
+        get(url, function(response) {
+            response.on('data', (chunk) => {});
+    
+            response.on('end', () => {});
+    
+            response.pipe(file);
         });
     }
 
@@ -137,7 +138,7 @@ export class PlexDownloader extends Downloader
             album: album,
             url: this.getPlexUrl(trackInfo.Media[0].Part[0].key),
             skipped: false,
-            cover: 'https://cdn.discordapp.com/attachments/844694662450643034/847965914095419392/1616278185.png', // await this.downloadCover(trackInfo.thumb, id),
+            cover: await this.getCover(title, artist, album), // await this.downloadCover(trackInfo.thumb, id),
             createAudioResource: this.createAudioResource
         }
     }

@@ -4,7 +4,6 @@ exports.PlexDownloader = void 0;
 const tslib_1 = require("tslib");
 const downloader_1 = require("./downloader");
 const fs_1 = require("fs");
-const node_fetch_1 = tslib_1.__importDefault(require("node-fetch"));
 const path_1 = require("path");
 const voice_1 = require("@discordjs/voice");
 const plex_api_1 = tslib_1.__importDefault(require("plex-api"));
@@ -73,12 +72,11 @@ class PlexDownloader extends downloader_1.Downloader {
         return await lastfm.getCoverUrl(title, artist);
     }
     async downloadFile(url, downloadPath) {
-        const res = await node_fetch_1.default(url);
-        const fileStream = fs_1.createWriteStream(downloadPath);
-        return await new Promise((resolve, reject) => {
-            res.body.pipe(fileStream);
-            res.body.on("error", reject);
-            fileStream.on("finish", resolve);
+        let file = fs_1.createWriteStream(downloadPath);
+        http_1.get(url, function (response) {
+            response.on('data', (chunk) => { });
+            response.on('end', () => { });
+            response.pipe(file);
         });
     }
     async downloadCover(localAbsoluteUrl, trackId) {
@@ -100,7 +98,7 @@ class PlexDownloader extends downloader_1.Downloader {
             album: album,
             url: this.getPlexUrl(trackInfo.Media[0].Part[0].key),
             skipped: false,
-            cover: 'https://cdn.discordapp.com/attachments/844694662450643034/847965914095419392/1616278185.png',
+            cover: await this.getCover(title, artist, album),
             createAudioResource: this.createAudioResource
         };
     }

@@ -30,7 +30,7 @@ class lastFm {
         }
     }
 
-    async getCoverUrl(title, artist) {
+    async getCoverUrl(title: string, artist: string) {
         let data = await this.getTrackInfo(title, artist);
 
         let sizes = ["extralarge", "large", "medium", "small"];

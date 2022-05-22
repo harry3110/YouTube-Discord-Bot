@@ -128,10 +128,9 @@ class Queue
     /**
      * Add a song to the queue
      * 
-     * @param {*} song      The song to add
-     * @param {*} silentAdd Whether to send a message to the channel
+     * @param {Song} song      The song to add
      */
-    async addSong(song) {
+    async addSong(song: Song) {
         this.songQueue.push(song);
 
         let embed = new MessageEmbed()
@@ -147,7 +146,7 @@ class Queue
         });
     }
     
-    async addOrPlay(song) {
+    async addOrPlay(song: Song) {
         await this.addSong(song);
 
         if (this.currentSong === null) {
@@ -171,11 +170,11 @@ class Queue
         return this.songQueue;
     }
 
-    getSong(index) {
+    getSong(index: number) {
         return this.songQueue[index];
     }
 
-    removeSong(index) {
+    removeSong(index: number) {
         this.songQueue.splice(index, 1);
     }
 
@@ -183,7 +182,7 @@ class Queue
         return this.pastSongs;
     }
 
-    addPastSong(song) {
+    addPastSong(song: Song) {
         this.pastSongs.push(song);
     }
 

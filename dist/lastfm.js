@@ -61,3 +61,4 @@ let lastfm = new lastFm({
     useragent: "BeeBop/1.0.0"
 });
 exports.lastfm = lastfm;
+//# sourceMappingURL=lastfm.js.map

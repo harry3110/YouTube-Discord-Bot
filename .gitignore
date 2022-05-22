@@ -8,3 +8,5 @@ config,json
 downloaders/ytdl-example.json
 
 downloads/
+
+*.map

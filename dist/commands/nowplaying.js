@@ -29,3 +29,4 @@ module.exports = {
         });
     },
 };
+//# sourceMappingURL=nowplaying.js.map

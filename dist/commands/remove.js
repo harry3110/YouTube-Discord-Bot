@@ -34,3 +34,4 @@ module.exports = {
         });
     },
 };
+//# sourceMappingURL=remove.js.map

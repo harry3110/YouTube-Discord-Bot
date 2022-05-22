@@ -6,11 +6,32 @@ import { AudioResource, createAudioResource, demuxProbe } from '@discordjs/voice
 import { Downloader } from './downloader';
 import { Song } from '../song-interface';
 import { Results, Video } from 'scrape-youtube/lib/interface';
+import { lastfm } from '../lastfm';
 
 const youtube = google.youtube({
     version: 'v3',
     auth: process.env.YOUTUBE_API_KEY
 });
+
+// Youtube Search Interface
+interface YoutubeSearchVideo {
+    kind: string;
+    etag: string;
+    id: {
+        kind: string;
+        videoId: string;
+    },
+    snippet: {
+        publishedAt: string;
+        channelId: string;
+        title: string;
+        description: string;
+        thumbnails: any;
+        channelTitle: string;
+        liveBroadcastContent: string;
+        publishTime: string;
+    }
+}
 
 // Youtube DL
 const ytdl = require('youtube-dl-exec');
@@ -26,28 +47,38 @@ class YouTubeDownloader extends Downloader
         let songs;
 
         songs = await this.searchByYouTubeAPI(query);
-        if (songs.length > 0) {
+        
+        if (songs) {
             return songs;
         }
+
+        console.log("No songs found with YouTube API");
         
-        console.log(" - Falling back to YouTube scraper");
-        songs = await this.searchByYouTubeScraper(query);
+        // TODO Fallback to YouTube scraper
+        // console.log(" - Falling back to YouTube scraper");
+        // songs = await this.searchByYouTubeScraper(query);
+        
+        songs = {};
 
         return songs;
     }
 
     async searchByYouTubeAPI(query: string) {
-        let response = await youtube.search.list({
-            part: 'snippet',
-            type: 'video',
-            q: query,
-            maxResults: 9,
-            safeSearch: 'moderate',
-            videoEmbeddable: true,
-            videoCategoryId: 10     // Music
-        }).then(res => {
-            return res.data;
-        }).catch(error => {
+        let results: YoutubeSearchVideo[]|null = null;
+
+        try {
+            let response = await youtube.search.list({
+                part: 'snippet',
+                type: 'video',
+                q: query,
+                maxResults: 9,
+                safeSearch: 'moderate',
+                videoEmbeddable: true,
+                videoCategoryId: 10     // Music
+            });
+
+            results = response.data.items;
+        } catch (error) {
             let errors = error.errors;
 
             console.log("Error searching for song: " + query);
@@ -61,13 +92,7 @@ class YouTubeDownloader extends Downloader
             }
 
             return false;
-        });
-
-        if (response === false) {
-            return [];
         }
-
-        let results = response.items;
 
         let songs = {};
 
@@ -120,8 +145,6 @@ class YouTubeDownloader extends Downloader
     }
 
     async getCover(title: string, artist: string, album: string|null = null) {
-        const lastfm = require("../lastfm");
-
         title = String(title).toLowerCase();
         
         // Remove common YouTube music video/lyric words

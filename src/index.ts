@@ -12,6 +12,7 @@ let downloader = new Downloader();
 
 // Queue object
 import { Queue } from "./queue.js";
+import { Song } from './song-interface';
 
 // Set current working directory (to /dist)
 process.chdir(__dirname);
@@ -131,7 +132,7 @@ client.on("interactionCreate", async interaction => {
                 });
 
                 // Get song information
-                let song_data = downloader.getSongData(video_id);
+                let song_data: Song = await downloader.getSongData(video_id);
 
                 // Add song to queue
                 queue.addOrPlay(song_data);

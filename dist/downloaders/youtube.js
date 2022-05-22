@@ -6,6 +6,7 @@ const scrape_youtube_1 = require("scrape-youtube");
 const fs_1 = require("fs");
 const voice_1 = require("@discordjs/voice");
 const downloader_1 = require("./downloader");
+const lastfm_1 = require("../lastfm");
 const youtube = google.youtube({
     version: 'v3',
     auth: process.env.YOUTUBE_API_KEY
@@ -15,25 +16,28 @@ class YouTubeDownloader extends downloader_1.Downloader {
     async searchSongs(query) {
         let songs;
         songs = await this.searchByYouTubeAPI(query);
-        if (songs.length > 0) {
+        if (songs) {
             return songs;
         }
-        console.log(" - Falling back to YouTube scraper");
-        songs = await this.searchByYouTubeScraper(query);
+        console.log("No songs found with YouTube API");
+        songs = {};
         return songs;
     }
     async searchByYouTubeAPI(query) {
-        let response = await youtube.search.list({
-            part: 'snippet',
-            type: 'video',
-            q: query,
-            maxResults: 9,
-            safeSearch: 'moderate',
-            videoEmbeddable: true,
-            videoCategoryId: 10
-        }).then(res => {
-            return res.data;
-        }).catch(error => {
+        let results = null;
+        try {
+            let response = await youtube.search.list({
+                part: 'snippet',
+                type: 'video',
+                q: query,
+                maxResults: 9,
+                safeSearch: 'moderate',
+                videoEmbeddable: true,
+                videoCategoryId: 10
+            });
+            results = response.data.items;
+        }
+        catch (error) {
             let errors = error.errors;
             console.log("Error searching for song: " + query);
             for (let i = 0; i < errors.length; i++) {
@@ -45,11 +49,7 @@ class YouTubeDownloader extends downloader_1.Downloader {
                 }
             }
             return false;
-        });
-        if (response === false) {
-            return [];
         }
-        let results = response.items;
         let songs = {};
         results.forEach(result => {
             let snippet = result.snippet;
@@ -92,7 +92,6 @@ class YouTubeDownloader extends downloader_1.Downloader {
         });
     }
     async getCover(title, artist, album = null) {
-        const lastfm = require("../lastfm");
         title = String(title).toLowerCase();
         title = title.replace("music video", "");
         title = title.replace("official video", "");
@@ -103,7 +102,7 @@ class YouTubeDownloader extends downloader_1.Downloader {
         artist = String(artist).toLowerCase();
         artist = artist.replace("vevo", "");
         artist = artist.replace("official", "");
-        return await lastfm.getCoverUrl(title, artist);
+        return await lastfm_1.lastfm.getCoverUrl(title, artist);
     }
     async getSongData(video_id) {
         let video_url = `https://www.youtube.com/watch?v=${video_id}`;
@@ -183,3 +182,4 @@ class YouTubeDownloader extends downloader_1.Downloader {
     }
 }
 exports.YouTubeDownloader = YouTubeDownloader;
+//# sourceMappingURL=youtube.js.map

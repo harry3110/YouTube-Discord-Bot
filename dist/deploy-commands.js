@@ -15,3 +15,4 @@ const rest = new rest_1.REST({ version: '9' }).setToken(process.env.DISCORD_TOKE
 rest.put(v9_1.Routes.applicationGuildCommands(process.env.APPLICATION_ID, process.env.DEV_GUILD_ID), { body: commands })
     .then(() => console.log('Successfully registered application commands.'))
     .catch(console.error);
+//# sourceMappingURL=deploy-commands.js.map

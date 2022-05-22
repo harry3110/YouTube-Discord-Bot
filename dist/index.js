@@ -87,7 +87,7 @@ client.on("interactionCreate", async (interaction) => {
                     embeds: [embed],
                     components: []
                 });
-                let song_data = downloader.getSongData(video_id);
+                let song_data = await downloader.getSongData(video_id);
                 queue.addOrPlay(song_data);
             }
             else {
@@ -105,3 +105,4 @@ client.on("interactionCreate", async (interaction) => {
     }
 });
 client.login(discord_token);
+//# sourceMappingURL=index.js.map

@@ -26,3 +26,4 @@ module.exports = {
         queue.pause();
     },
 };
+//# sourceMappingURL=resume.js.map

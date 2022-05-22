@@ -9,3 +9,4 @@ module.exports = {
         await interaction.reply(`Hello ${interaction.user.username} from ${interaction.guild.name}, use tag is '${interaction.user.tag}' and your ID is ${interaction.user.id}`);
     },
 };
+//# sourceMappingURL=whoami.js.map

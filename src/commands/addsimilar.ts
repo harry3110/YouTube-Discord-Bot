@@ -32,7 +32,7 @@ module.exports = {
         
         console.log("About to add similar songs");
 
-        queue.addSimilarSongsFromQueue(interaction.options.getInteger('amount') ?? 10).then(() => {
+        queue.addSimilarSongsFromQueue(interaction.options.getInteger('amount') ?? 5).then(() => {
             // Edit embed
             let embed = new MessageEmbed()
                 .setTitle(`Added similar songs to queue!`)

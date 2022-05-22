@@ -23,7 +23,7 @@ module.exports = {
             embeds: [embed]
         });
         console.log("About to add similar songs");
-        queue.addSimilarSongsFromQueue(interaction.options.getInteger('amount') ?? 10).then(() => {
+        queue.addSimilarSongsFromQueue(interaction.options.getInteger('amount') ?? 5).then(() => {
             let embed = new discord_js_1.MessageEmbed()
                 .setTitle(`Added similar songs to queue!`)
                 .setColor(colors.aqua);

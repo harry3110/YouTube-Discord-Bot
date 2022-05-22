@@ -4,9 +4,9 @@ const config = require('dotenv').config();
 const discord_token = process.env.DISCORD_TOKEN;
 const fs_1 = require("fs");
 const discord_js_1 = require("discord.js");
-const youtube_1 = require("./downloaders/youtube");
-let downloader = new youtube_1.YouTubeDownloader();
 const queue_js_1 = require("./queue.js");
+const downloader_js_1 = require("./downloaders/downloader.js");
+let downloader = downloader_js_1.getDownloader();
 process.chdir(__dirname);
 const colors = {
     'aqua': 0x5abdd1,
@@ -88,6 +88,7 @@ client.on("interactionCreate", async (interaction) => {
                     components: []
                 });
                 let song_data = await downloader.getSongData(video_id);
+                console.log("Song data", song_data);
                 queue.addOrPlay(song_data);
             }
             else {

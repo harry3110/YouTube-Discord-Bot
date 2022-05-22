@@ -14,8 +14,7 @@ const youtube = google.youtube({
 const ytdl = require('youtube-dl-exec');
 class YouTubeDownloader extends downloader_1.Downloader {
     async searchSongs(query, limit = 9) {
-        let songs;
-        songs = await this.searchByYouTubeAPI(query, limit);
+        let songs = await this.searchByYouTubeAPI(query, limit);
         if (songs.length > 0) {
             return songs;
         }

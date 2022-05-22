@@ -1,12 +1,27 @@
 import { AudioResource } from '@discordjs/voice';
 import { Song } from 'src/song-interface';
 
+const config = require('dotenv').config();
+
 export interface SongSearchResult {
     id: string;
     title: string;
     artist: string;
     publishDate: string;
     thumbnail: string;
+}
+
+export function getDownloader() {
+    // Plex Downloader
+    if (process.env.DOWNLOADER === 'plex') {
+        const { PlexDownloader } = require('./plex');
+
+        return new PlexDownloader();
+    }
+    
+    // YouTube Downloader
+    const { YouTubeDownloader } = require("./youtube");
+    return new YouTubeDownloader();
 }
 
 class Downloader

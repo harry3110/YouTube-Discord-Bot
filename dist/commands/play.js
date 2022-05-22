@@ -50,6 +50,7 @@ module.exports = {
                 emoji: emojis[emoji++]
             });
         }
+        console.log(select_options);
         select_options.push({
             label: "Cancel",
             value: "cancel",

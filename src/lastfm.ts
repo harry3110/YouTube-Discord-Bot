@@ -1,3 +1,5 @@
+import { URL } from "url";
+
 interface LastFmImage {
     '#text': string; // URL to image
     size: string;
@@ -69,7 +71,7 @@ class lastFm {
         }
     }
 
-    async getSimilarTracks(title, artist, autocorrect = true): LastFmSimilarTrack {
+    async getSimilarTracks(title, artist, autocorrect = true): Promise<LastFmSimilarTrack> {
         let data: any = await this.request("track.getSimilar", {
             track: title,
             artist: artist,
@@ -98,14 +100,12 @@ let lastfm = new lastFm({
 //     console.log(data);
 // });
 
-/**
-similarSongs.push({
+/* similarSongs.push({
     title: track.name,
     artist: track.artist.name,
     // album: track.album.title,
     cover: image_url,
     match_chance: track.match,
-});
- */
+}); */
 
 export { lastfm };

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.YouTubeDownloader = void 0;
 const { google } = require('googleapis');
-const scrape_youtube_1 = require("scrape-youtube");
+const youtubei_1 = require("youtubei");
 const fs_1 = require("fs");
 const voice_1 = require("@discordjs/voice");
 const downloader_1 = require("./downloader");
@@ -20,7 +20,8 @@ class YouTubeDownloader extends downloader_1.Downloader {
             return songs;
         }
         console.log("No songs found with YouTube API");
-        songs = {};
+        console.log(" - Falling back to YouTube scraper");
+        songs = await this.searchByYouTubeScraper(query);
         return songs;
     }
     async searchByYouTubeAPI(query) {
@@ -64,32 +65,22 @@ class YouTubeDownloader extends downloader_1.Downloader {
         return songs;
     }
     async searchByYouTubeScraper(query) {
-        const headers = {
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36',
-            'accept-language': 'en-US,en;q=0.9',
-            'accept-encoding': 'gzip, deflate, br',
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'referer': 'https://youtube.com/'
-        };
-        const options = {
-            type: 'video',
-            requestOptions: {
-                headers: headers
-            }
-        };
         console.log("Querying for song: " + query);
-        console.log(options);
-        const search = await scrape_youtube_1.youtube.search(query, options);
-        let results = search.videos;
-        return results.map(result => {
-            return {
-                id: result.id,
-                title: result.title,
-                artist: result.channel.name,
-                thumbnail: result.thumbnail,
-                publishDate: result.uploaded
+        let scraper = new youtubei_1.Client();
+        const videos = await scraper.search(query, {
+            type: "video",
+        });
+        let songs = {};
+        videos.forEach(video => {
+            songs[video.id] = {
+                id: video.id,
+                title: video.title,
+                artist: video.channel.name,
+                thumbnail: video.thumbnails[0].url,
+                publishDate: video.uploadDate
             };
         });
+        return songs;
     }
     async getCover(title, artist, album = null) {
         title = String(title).toLowerCase();

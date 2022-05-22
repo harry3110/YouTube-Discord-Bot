@@ -64,6 +64,8 @@ module.exports = {
             })
         }
 
+        console.log(select_options);
+
         // Cancel option
         select_options.push({
             label: "Cancel",

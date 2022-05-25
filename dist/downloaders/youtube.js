@@ -105,9 +105,14 @@ class YouTubeDownloader extends downloader_1.Downloader {
     }
     async getSongData(video_id) {
         let video_url = `https://www.youtube.com/watch?v=${video_id}`;
+        let error = false;
         let data = await ytdl(video_url, {
             dumpSingleJson: true,
-        }).then(info => info);
+        }).catch(error => {
+            error = true;
+        });
+        if (error)
+            return null;
         let artist = data.creator ?? data.uploader;
         let title = data.track ?? data.title;
         let album = data.album = null ?? data.playlist ?? "Unknown Album";

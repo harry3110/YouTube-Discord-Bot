@@ -166,10 +166,15 @@ class YouTubeDownloader extends Downloader
 
     async getSongData(video_id: string): Promise<Song|null> {
         let video_url = `https://www.youtube.com/watch?v=${video_id}`;
+        let error = false;
 
         let data = await ytdl(video_url, {
             dumpSingleJson: true,
-        }).then(info => info);
+        }).catch(error => {
+            error = true;
+        });
+
+        if (error) return null;
 
         let artist = data.creator ?? data.uploader;
         let title = data.track ?? data.title;

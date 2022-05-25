@@ -88,7 +88,17 @@ client.on("interactionCreate", async (interaction) => {
                     components: []
                 });
                 let song_data = await downloader.getSongData(video_id);
-                console.log("Song data", song_data);
+                if (song_data === null) {
+                    console.log("There was an error searching for the song.");
+                    let embed = new discord_js_1.MessageEmbed()
+                        .setTitle(`Please try another song, that one didn't work...`)
+                        .setDescription("This just sometimes happens, I'm trying my best!")
+                        .setColor(colors.red);
+                    interaction.update({
+                        embeds: [embed],
+                        components: []
+                    });
+                }
                 queue.addOrPlay(song_data);
             }
             else {

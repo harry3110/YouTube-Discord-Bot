@@ -12,6 +12,7 @@ Commands Available:
 - /remove: Remove a song from the queue
 - /pause: Pauses/resumes the current song
 - /resume: Resume the current song
+- /addsimilar: Add more songs to the queue, similar to the ones in the queue (using last.fm)
 
 To do:
 

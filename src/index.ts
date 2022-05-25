@@ -47,8 +47,8 @@ for (const file of commandFiles) {
 }
 
 /**
-* @param {Queue} queue
-*/
+ * @param {Queue} queue
+ */
 let queue = new Queue(client, null, null, null);
 
 // On client ready
@@ -134,7 +134,20 @@ client.on("interactionCreate", async interaction => {
                 // Get song information
                 let song_data: Song = await downloader.getSongData(video_id);
 
-                console.log("Song data", song_data);
+                if (song_data === null) {
+                    console.log("There was an error searching for the song.");
+
+                    let embed = new MessageEmbed()
+                        .setTitle(`Please try another song, that one didn't work...`)
+                        .setDescription("This just sometimes happens, I'm trying my best!")
+                        .setColor(colors.red)
+                    ;
+
+                    interaction.update({
+                        embeds: [embed],
+                        components: []
+                    });
+                }
 
                 // Add song to queue
                 queue.addOrPlay(song_data);

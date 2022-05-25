@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = require("tslib");
-const fs = tslib_1.__importStar(require("node:fs"));
+const fs = require("node:fs");
 const rest_1 = require("@discordjs/rest");
 const v9_1 = require("discord-api-types/v9");
 const config = require('dotenv').config();

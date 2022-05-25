@@ -1,12 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlexDownloader = void 0;
-const tslib_1 = require("tslib");
 const downloader_1 = require("./downloader");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const voice_1 = require("@discordjs/voice");
-const plex_api_1 = tslib_1.__importDefault(require("plex-api"));
+const plex_api_1 = require("plex-api");
 const http_1 = require("http");
 var plex = new plex_api_1.default({
     hostname: process.env.PLEX_HOSTNAME,

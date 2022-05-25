@@ -28,6 +28,4 @@ ENV PLEX_PORT=32400
 ENV LF_API_KEY=
 ENV LF_SECRET=
 
-EXPOSE 8080
-
 CMD ["node", "dist/index.js"]
